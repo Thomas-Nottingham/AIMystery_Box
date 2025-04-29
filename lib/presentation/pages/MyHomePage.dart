@@ -1,5 +1,5 @@
-import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
-import 'package:SandBox_Gifts_Backup/widgets/product_list.dart';
+import 'package:SandBox_Gifts_Backup/presentation/pages/cart_page.dart';
+import 'package:SandBox_Gifts_Backup/presentation/widgets/product_list.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,23 +10,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-
   int currentPage = 0;
 
-  List<Widget> pages = [
-    const ProductList(),
-    const CartPage(),
-  ];
+  List<Widget> pages = [const ProductList(), const CartPage()];
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      body: IndexedStack(
-        index: currentPage,
-        children: pages,
-      ),
+      body: IndexedStack(index: currentPage, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         iconSize: 20,
         onTap: (index) {
@@ -35,8 +26,14 @@ class _HomePageState extends State<HomePage> {
           });
         },
         currentIndex: currentPage,
-        items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), 
-      BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart')]),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
+        ],
+      ),
     );
   }
 }

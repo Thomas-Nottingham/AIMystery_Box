@@ -38,6 +38,8 @@ dependencies:
   provider: ^6.1.4
   http: ^1.3.0
   animate_do: ^4.2.0
+  supabase_flutter: ^2.8.4
+  video_player: ^2.9.5
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +70,13 @@ flutter:
     - assets/images/MG3.png
     - assets/images/MG4.png
     - assets/images/profile_picture.png
+    - assets/images/£10.png
+    - assets/images/£20.png
+    - assets/images/£30.png
+    - assets/images/£50.png
+    - assets/images/VideoGift.png
+    - assets/videos/mystery_video.mp3
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
