@@ -16,24 +16,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: currentPage, children: pages),
-      bottomNavigationBar: BottomNavigationBar(
-        iconSize: 20,
-        onTap: (index) {
-          setState(() {
-            currentPage = index;
-          });
-        },
-        currentIndex: currentPage,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
-          ),
-        ],
-      ),
-    );
+    return Scaffold(body: IndexedStack(index: currentPage, children: pages));
   }
 }

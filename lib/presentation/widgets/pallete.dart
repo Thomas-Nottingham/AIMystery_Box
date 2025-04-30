@@ -64,33 +64,45 @@ class Pallete {
   // ); // Deep olive for legible main text
   // static const Color MysteryTitle = Color(0xFFB8BE86);
 
+  // button color for begin game 0xFF261532
+
   static const Color ScaffoldBackgroundColor = Color(
     0xFF577E89,
   ); // Hampton - soft light cream, very gentle background
 
   static const Color primaryCol = Color(
-    0xFFE1A36F,
+    0xFFD6C8DF,
   ); // Harvest Gold - warm inviting orange, for buttons/highlights
 
-  static const Color secondaryCol = Color(
-    0xFFDEC484,
-  ); // Calico - muted sandy yellow, for secondary elements
+  static const Color secondaryCol = Color(0xFF261532);
+  // Calico - muted sandy yellow, for secondary elements
 
-  static const Color YellowCol = Color(
-    0xFFDEC484,
-  ); // Reusing Calico as the yellow equivalent
+  static const Color Purps = Color(0xFF65558F);
+  // Reusing Calico as the yellow equivalent
 
-  static const Color hintTextCol = Color(
-    0xFF6F9F9C,
-  ); // Sea Nymph - soft teal, relaxing for hint text
+  static const Color hintTextCol = Color(0xFFB3B3B3);
+  // Sea Nymph - soft teal, relaxing for hint text
 
   static const Color TransparentCol = Colors.transparent;
 
-  static const Color MainTextCol = Color(
-    0xFF577E89,
-  ); // Smalt Blue - strong muted blue for main readable text
+  static const Color MainTextCol = Color(0xFFFEF7FF);
+  // Smalt Blue - strong muted blue for main readable text
 
-  static const Color MysteryTitle = Color(
-    0xFF577E89,
-  ); // Smalt Blue - same strong muted blue for the mystery title
+  static const Color MysteryTitle = Color(0xFFD6C8DF);
+
+  static const LinearGradient gradientBackground = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [0.07, 0.18, 0.37, 0.42, 0.63, 0.80, 0.90],
+    colors: [
+      Color(0xFF040120),
+      Color(0xFF1B52C2),
+      Color(0xFF9614E0),
+      Color(0xFF0E0230),
+      Color(0xFF6B1ABF),
+      Color(0xFF661494),
+      Color(0xFF3F209E),
+    ],
+  );
+  // Smalt Blue - same strong muted blue for the mystery title
 } // Also Sea Nymph - adds some mystery feel

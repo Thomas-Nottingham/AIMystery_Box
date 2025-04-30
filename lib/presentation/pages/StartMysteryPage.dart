@@ -109,7 +109,7 @@ class _StartMysteryPageState extends State<StartMysteryPage> {
   @override
   Widget build(BuildContext context) {
     const border = OutlineInputBorder(
-      borderSide: BorderSide(color: Pallete.YellowCol),
+      borderSide: BorderSide(color: Pallete.Purps),
     );
     return Scaffold(
       backgroundColor: Pallete.primaryCol,
@@ -208,9 +208,7 @@ class _StartMysteryPageState extends State<StartMysteryPage> {
                         ).copyWith(topLeft: Radius.zero),
                         boxShadow: [
                           BoxShadow(
-                            color: Pallete.YellowCol.withOpacity(
-                              0.2,
-                            ), // Glow color
+                            color: Pallete.Purps.withOpacity(0.2), // Glow color
                             blurRadius: 5, // Spread of the glow
                             spreadRadius: 0,
                             offset: Offset(0, 0), // Intensity of the glow
@@ -241,7 +239,7 @@ class _StartMysteryPageState extends State<StartMysteryPage> {
                   child: TextField(
                     controller:
                         _textController, // Optional: Add a controller if needed
-                    style: TextStyle(color: Pallete.YellowCol),
+                    style: TextStyle(color: Pallete.Purps),
                     minLines: 2, // Start with 2 lines
                     maxLines: 3, // Expand up to 4 lines
                     keyboardType: TextInputType.text,

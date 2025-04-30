@@ -40,6 +40,7 @@ dependencies:
   animate_do: ^4.2.0
   supabase_flutter: ^2.8.4
   video_player: ^2.9.5
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +77,13 @@ flutter:
     - assets/images/£50.png
     - assets/images/VideoGift.png
     - assets/videos/mystery_video.mp3
+    - assets/images/GiftBackground.png
+    - assets/images/Review1.png
+    - assets/images/Review2.png
+    - assets/images/Review3.png
+    - assets/images/gift_background_desktop.png
+    - assets/videos/Firefly Could this be an unboxing of a mystery gift can q uestion mark fly out- 485173.mp4
+    - assets/images/vitreon.png
 
 
 

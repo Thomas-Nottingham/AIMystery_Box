@@ -5,6 +5,7 @@ import 'package:SandBox_Gifts_Backup/supabase_client.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:SandBox_Gifts_Backup/footer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,10 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           scaffoldBackgroundColor:
-              Pallete.ScaffoldBackgroundColor, // Replace with a valid color
+              Pallete
+                  .gradientBackground
+                  .colors
+                  .first, // Use the first color of the gradient, // Replace with a valid color
 
           colorScheme: ColorScheme.fromSeed(
             seedColor: Pallete.ScaffoldBackgroundColor,
