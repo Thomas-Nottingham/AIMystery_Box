@@ -1,6 +1,6 @@
 import 'package:SandBox_Gifts_Backup/core/Ai/openai_service.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
-import 'package:SandBox_Gifts_Backup/presentation/widgets/pallete.dart';
+import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:SandBox_Gifts_Backup/supabase_client.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

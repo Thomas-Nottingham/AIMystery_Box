@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:SandBox_Gifts_Backup/presentation/widgets/pallete.dart';
+import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 
 class MyFooter extends StatelessWidget {
   const MyFooter({Key? key}) : super(key: key);
@@ -12,22 +12,57 @@ class MyFooter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Align items to the start
               children: const [
-                Icon(FontAwesomeIcons.instagram, color: Colors.white, size: 20),
-                SizedBox(height: 12),
-                Icon(FontAwesomeIcons.xTwitter, color: Colors.white, size: 20),
-                SizedBox(height: 12),
-                Icon(FontAwesomeIcons.youtube, color: Colors.white, size: 20),
-                SizedBox(height: 12),
-                Icon(FontAwesomeIcons.linkedin, color: Colors.white, size: 20),
+                // Instagram Icon
+                // Add horizontal spacing
+                Icon(
+                  FontAwesomeIcons.instagram,
+                  color: Pallete.footerCol,
+                  size: 30, // Slightly larger size for better visibility
+                ),
+
+                // Twitter Icon
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ), // Add horizontal spacing
+                  child: Icon(
+                    FontAwesomeIcons.xTwitter,
+                    color: Pallete.footerCol,
+                    size: 30,
+                  ),
+                ),
+                // YouTube Icon
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ), // Add horizontal spacing
+                  child: Icon(
+                    FontAwesomeIcons.youtube,
+                    color: Pallete.footerCol,
+                    size: 30,
+                  ),
+                ),
+                // LinkedIn Icon
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ), // Add horizontal spacing
+                  child: Icon(
+                    FontAwesomeIcons.linkedin,
+                    color: Pallete.footerCol,
+                    size: 30,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(width: 30),
+            SizedBox(height: 20), // Space between icons and text
             // Remove Expanded – it conflicts with horizontal scroll
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,10 +91,9 @@ class FooterLink extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: SizedBox(
-        width: 200, // Set a fixed or relative width
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: const TextStyle(color: Pallete.footerCol, fontSize: 20),
           softWrap: true,
         ),
       ),

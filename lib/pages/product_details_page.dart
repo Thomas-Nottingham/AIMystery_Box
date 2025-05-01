@@ -1,5 +1,5 @@
-import 'package:SandBox_Gifts_Backup/presentation/pages/StartMysteryPage.dart';
-import 'package:SandBox_Gifts_Backup/presentation/widgets/pallete.dart';
+import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage.dart';
+import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

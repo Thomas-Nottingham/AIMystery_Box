@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:SandBox_Gifts_Backup/core/secrets/secrets.dart';
 import 'package:http/http.dart' as http;
 
 class OpenAIService {
@@ -7,6 +6,8 @@ class OpenAIService {
   final List<Map<String, String>> Amazon_Search_Data = [];
 
   Future<String> isArtPromptAPI(String title, double price) async {
+    const openAIAPIKey =
+        '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';
     final prompt =
         "Generate a very short response (2 sentences). Generate a response for a mystery box titled '$title' priced at \$$price. Make sure to mention the title and the price. Dont lie you're here to help them. Most importantly you need ask them questions about themselves to get an idea of what surprise gift they may want. NEVER TELL THEM WHAT THEY'RE GETTING its a surprise";
     try {
@@ -37,6 +38,8 @@ class OpenAIService {
   }
 
   Future<String> chatGPTAPI(String prompt) async {
+    const openAIAPIKey =
+        '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';
     messages.add({
       'role': 'user',
       'content':
@@ -72,6 +75,8 @@ class OpenAIService {
   }
 
   Future productFinder(String productDetails) async {
+    const openAIAPIKey =
+        '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';
     final prompt =
         "Can you break these messages down into smaller keywords that we can use to find amazon products online? $productDetails";
 
