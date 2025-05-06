@@ -34,8 +34,8 @@ class CartPage extends StatelessWidget {
             child: Image.asset(
               isMobile
                   ? 'assets/images/Cart_Background.png'
-                  : 'assets/images/Cart_BackgroundLandscape.png',
-              fit: isMobile ? BoxFit.cover : BoxFit.contain,
+                  : 'assets/images/cart_background3.png',
+              fit: isMobile ? BoxFit.cover : BoxFit.cover,
               alignment: Alignment.center,
             ),
           ),

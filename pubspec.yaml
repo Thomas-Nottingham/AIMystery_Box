@@ -90,6 +90,7 @@ flutter:
     - assets/images/contactUsLandscape.png
     - assets/images/Cart_Background.png
     - 'assets/images/Cart_BackgroundLandscape.png'
+    - 'assets/images/cart_background3.png'
     
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
