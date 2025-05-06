@@ -1,5 +1,5 @@
 import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
-import 'package:SandBox_Gifts_Backup/widgets/product_list.dart';
+import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {

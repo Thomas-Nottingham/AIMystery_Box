@@ -1,4 +1,7 @@
-import 'package:SandBox_Gifts_Backup/pages/MyHomePage.dart';
+import 'package:SandBox_Gifts_Backup/pages/Contact_us.dart';
+import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage.dart';
+import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
+import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
 import 'package:SandBox_Gifts_Backup/supabase_client.dart';
@@ -15,40 +18,24 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => CartProvider(),
       child: MaterialApp(
-        title: 'Shopping App', // Keep this as a plain string for system use
+        title: 'Shopping App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          scaffoldBackgroundColor:
-              Pallete
-                  .gradientBackground
-                  .colors
-                  .first, // Use the first color of the gradient, // Replace with a valid color
-
+          scaffoldBackgroundColor: Pallete.gradientBackground.colors.first,
           colorScheme: ColorScheme.fromSeed(
             seedColor: Pallete.ScaffoldBackgroundColor,
             brightness: Brightness.light,
           ).copyWith(
-            primary: Pallete.primaryCol, // Replace with your desired color
+            primary: Pallete.primaryCol,
             secondary: Pallete.secondaryCol,
           ),
-          inputDecorationTheme: const InputDecorationTheme(
-            hintStyle: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Pallete.hintTextCol, // helps hint text show on dark bg
-            ),
-            prefixIconColor: Color.fromRGBO(119, 119, 119, 1),
-          ),
-
           appBarTheme: const AppBarTheme(
-            backgroundColor:
-                Pallete.TransparentCol, // Or black if you prefer solid
+            backgroundColor: Pallete.TransparentCol,
             elevation: 0,
             titleTextStyle: TextStyle(
               fontWeight: FontWeight.bold,
@@ -56,15 +43,12 @@ class MyApp extends StatelessWidget {
               color: Pallete.MainTextCol,
             ),
           ),
-          iconTheme: IconThemeData(color: Pallete.MainTextCol),
-
           textTheme: TextTheme(
             titleLarge: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 35,
               color: Pallete.MainTextCol,
             ),
-
             titleMedium: GoogleFonts.lato(
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -73,20 +57,41 @@ class MyApp extends StatelessWidget {
             bodySmall: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: Pallete.hintTextCol, // helps hint text show on dark bg
+              color: Pallete.hintTextCol,
             ),
-
             titleSmall: TextStyle(
               fontWeight: FontWeight.normal,
               fontSize: 14,
-              color: Pallete.MainTextCol, // helps hint text show on dark bg
+              color: Pallete.MainTextCol,
             ),
           ),
           useMaterial3: true,
         ),
-        //home: ProductDetailsPage(product: products[0],),
-        //home: StartMysteryPage(product: products[0],),
-        home: HomePage(),
+        initialRoute: '/home',
+        onGenerateRoute: (settings) {
+          if (settings.name == '/startMysteryPage') {
+            return PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 500),
+              pageBuilder: (context, animation, secondaryAnimation) {
+                return ScaleTransition(
+                  scale: animation,
+                  child: StartMysteryPage(),
+                );
+              },
+            );
+          }
+
+          // Add other routes here
+          return null;
+        },
+        routes: {
+          '/home': (context) => const ProductList(),
+          '/startMysteryPage': (context) => StartMysteryPage(),
+          '/contact': (context) => const ContactUs(),
+          '/cart_page': (context) => const CartPage(),
+
+          // Navigate to StartMysteryPage with the AI response
+        },
       ),
     );
   }

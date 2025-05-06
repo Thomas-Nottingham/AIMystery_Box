@@ -1,13 +1,12 @@
 import 'package:SandBox_Gifts_Backup/footer.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
-import 'package:SandBox_Gifts_Backup/pages/product_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:SandBox_Gifts_Backup/global_variables.dart';
 import 'package:video_player/video_player.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  const ProductList({Key? key}) : super(key: key);
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -15,10 +14,10 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList>
     with SingleTickerProviderStateMixin {
+  bool isLoading = false;
   late String selectedFilter;
   late VideoPlayerController _controller;
   late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
   bool isVideoVisible = false;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _faqKey = GlobalKey(); // Key for the FAQ section
@@ -78,10 +77,6 @@ class _ProductListState extends State<ProductList>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
   }
 
   @override
@@ -92,11 +87,48 @@ class _ProductListState extends State<ProductList>
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Check for navigation arguments
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    if (args != null) {
+      final scrollTo = args['scrollTo'];
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollTo == 'about') {
+          final aboutContext = _aboutKey.currentContext;
+          if (aboutContext != null) {
+            final renderBox = aboutContext.findRenderObject() as RenderBox;
+            final offset = renderBox.localToGlobal(Offset.zero).dy;
+            _scrollToSection(offset);
+          }
+        } else if (scrollTo == 'faq') {
+          final faqContext = _faqKey.currentContext;
+          if (faqContext != null) {
+            final renderBox = faqContext.findRenderObject() as RenderBox;
+            final offset = renderBox.localToGlobal(Offset.zero).dy;
+            _scrollToSection(offset);
+          }
+        }
+      });
+    }
+  }
+
+  void _scrollToSection(double offset) {
+    _scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
   void scrollToAbout() {
-    // Scroll to the FAQ section
+    // Scroll to the About section
     Scrollable.ensureVisible(
       _aboutKey.currentContext!,
-      duration: const Duration(seconds: 1), // Smooth scrolling
+      duration: const Duration(milliseconds: 500), // Smooth scrolling
       curve: Curves.easeInOut,
     );
   }
@@ -105,7 +137,7 @@ class _ProductListState extends State<ProductList>
     // Scroll to the FAQ section
     Scrollable.ensureVisible(
       _faqKey.currentContext!,
-      duration: const Duration(seconds: 1), // Smooth scrolling
+      duration: const Duration(milliseconds: 500), // Smooth scrolling
       curve: Curves.easeInOut,
     );
   }
@@ -268,13 +300,16 @@ class _ProductListState extends State<ProductList>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Text(
-                            item['question']!,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            child: Text(
+                              item['question']!,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -310,184 +345,215 @@ class _ProductListState extends State<ProductList>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 800;
-
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    print("Current Route: $currentRoute");
     return BaseLayout(
       onScrollToFAQ: scrollToFAQ,
-      onScrollToAbout:
-          scrollToAbout, // Pass the scrollToFAQ method as a callback
-      child: SingleChildScrollView(
-        controller: _scrollController,
-
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Stack(
+      onScrollToAbout: scrollToAbout,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: Image.asset(
-                    'assets/images/gift_bg.png',
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).size.height * 0.02,
-                  left: MediaQuery.of(context).size.width / 2 - 150,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_controller.value.isPlaying) {
-                        _controller.pause();
-                      } else {
-                        _controller.play();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Pallete.Purps,
-                      foregroundColor: Pallete.primaryCol,
-                      fixedSize: Size(
-                        300,
-                        MediaQuery.of(context).size.height * 0.05,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    ),
-                    child: const Text(
-                      'Who am I?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: MediaQuery.of(context).size.height * 0.35,
-                  left: MediaQuery.of(context).size.width / 2 - 100,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await _animationController.forward();
-                      await _animationController.reverse();
-
-                      Navigator.of(context).push(
-                        PageRouteBuilder(
-                          transitionDuration: const Duration(milliseconds: 500),
-                          pageBuilder: (
-                            context,
-                            animation,
-                            secondaryAnimation,
-                          ) {
-                            return ScaleTransition(
-                              scale: animation,
-                              child: ProductDetailsPage(product: products[0]),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Pallete.secondaryCol,
-                      foregroundColor: Pallete.Purps,
-                      fixedSize: Size(
-                        200,
-                        MediaQuery.of(context).size.height * 0.1,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Unlock Me',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: 1000,
-              child: Text(
-                'Over 200 people have viewed this website today',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isMobile ? 16 : 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 80),
-            // About Us Section
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              constraints: const BoxConstraints(maxWidth: 1000),
-
-              child: Container(
-                key: _aboutKey, // Assign the GlobalKey to the FAQ section
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                Stack(
                   children: [
-                    const Text(
-                      'About Us',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    // Background Image
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      child: Image.asset(
+                        'assets/images/gift_bg.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'At SandBox Gifts, we believe in the joy of giving. Our mission is to help you find the perfect gift for every occasion, '
-                      'whether it’s a birthday, anniversary, or just a way to show someone you care. With a curated selection of unique products '
-                      'and experiences, we aim to make gift-giving effortless and memorable.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
+
+                    // "Who am I?" Button
+                    Positioned(
+                      top: MediaQuery.of(context).size.height * 0.02,
+                      left: MediaQuery.of(context).size.width / 2 - 150,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_controller.value.isPlaying) {
+                            _controller.pause();
+                          } else {
+                            _controller.play();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Pallete.Purps,
+                          foregroundColor: Pallete.primaryCol,
+                          fixedSize: Size(
+                            300,
+                            MediaQuery.of(context).size.height * 0.05,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        child: const Text(
+                          'Who am I?',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Our team is passionate about discovering the best gifts from around the world and bringing them to your fingertips. '
-                      'Thank you for choosing SandBox Gifts as your trusted gifting partner.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
+
+                    Positioned(
+                      bottom: MediaQuery.of(context).size.height * 0.35,
+                      left: MediaQuery.of(context).size.width / 2 - 100,
+                      child: ElevatedButton(
+                        onPressed:
+                            isLoading
+                                ? null // Disable the button while loading
+                                : () async {
+                                  setState(() {
+                                    isLoading =
+                                        true; // Set loading state to true
+                                  });
+
+                                  try {
+                                    if (mounted) {
+                                      Navigator.of(context).pushNamed(
+                                        '/startMysteryPage',
+                                        arguments: {'product': products[0]},
+                                      );
+                                    }
+                                  } catch (e) {
+                                    // Handle errors (e.g., show a snackbar)
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Failed to generate response: $e',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() {
+                                        isLoading =
+                                            false; // Reset loading state
+                                      });
+                                    }
+                                  }
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Pallete.secondaryCol,
+                          foregroundColor: Pallete.Purps,
+                          fixedSize: Size(
+                            200,
+                            MediaQuery.of(context).size.height * 0.1,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Unlock Me',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 10),
+
+                // About Section
+                Container(
+                  key: _aboutKey,
+
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 40,
+                    horizontal: 20,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  constraints: const BoxConstraints(maxWidth: 1000),
+
+                  child: Container(
+                    // Assign the GlobalKey to the FAQ section
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'About Us',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'At SandBox Gifts, we believe in the joy of giving. Our mission is to help you find the perfect gift for every occasion, '
+                          'whether it’s a birthday, anniversary, or just a way to show someone you care. With a curated selection of unique products '
+                          'and experiences, we aim to make gift-giving effortless and memorable.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18, color: Colors.white70),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Our team is passionate about discovering the best gifts from around the world and bringing them to your fingertips. '
+                          'Thank you for choosing SandBox Gifts as your trusted gifting partner.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 80),
+
+                // Trending List
+                _buildTrendingList(),
+                const SizedBox(height: 20),
+
+                // FAQ Section
+                Container(key: _faqKey, child: _buildFAQSection()),
+                const SizedBox(height: 20),
+
+                // Footer
+                MyFooter(),
+              ],
+            ),
+          ),
+
+          // Loading Indicator
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(
+                0.5,
+              ), // Semi-transparent background
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
               ),
             ),
-
-            const SizedBox(height: 80),
-            _buildTrendingList(),
-            const SizedBox(height: 20),
-            // Add the FAQ section here
-            Container(
-              key: _faqKey, // Assign the GlobalKey to the FAQ section
-              child: _buildFAQSection(),
-            ),
-            const SizedBox(height: 20),
-            MyFooter(),
-          ],
-        ),
+        ],
       ),
     );
   }

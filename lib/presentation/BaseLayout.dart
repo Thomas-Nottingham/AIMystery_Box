@@ -1,43 +1,91 @@
-// lib/presentation/widgets/base_layout.dart
-import 'package:SandBox_Gifts_Backup/footer.dart';
-import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
-import 'package:SandBox_Gifts_Backup/widgets/product_list.dart';
 
 class BaseLayout extends StatelessWidget {
   final Widget child;
-  final Widget? floatingActionButton;
-  final VoidCallback? onScrollToFAQ; // Add a callback for scrolling to FAQ
-  final VoidCallback? onScrollToAbout; // Add a callback for scrolling to About
+  final VoidCallback? onScrollToFAQ;
+  final VoidCallback? onScrollToAbout;
+  final AppBar? appBarr;
+  final Color? appBarColor;
+  final Color? appTextColor;
+  final Color? iconColor;
+  final Text? text_title;
+  final bool? centerTitle;
 
   const BaseLayout({
     super.key,
     required this.child,
-    this.floatingActionButton,
     this.onScrollToFAQ,
     this.onScrollToAbout,
+    this.appBarr,
+    this.appBarColor,
+    this.appTextColor,
+    this.iconColor,
+    this.text_title,
+    this.centerTitle,
   });
+
+  Future<bool> _showExitConfirmation(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Confirm Exit'),
+                content: const Text(
+                  'Are you sure you want to leave this page? \nChat history will not be stored',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false), // Cancel
+                    child: const Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true), // Confirm
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+        ) ??
+        false; // Default to false if dialog is dismissed
+  }
+
+  Future<void> _handleNavigation(
+    BuildContext context,
+    VoidCallback action,
+  ) async {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    print("Current Route: $currentRoute");
+    if (currentRoute == '/startMysteryPage' || currentRoute == '/cart_page') {
+      final shouldExit = await _showExitConfirmation(context);
+      if (!shouldExit) return; // Cancel navigation if user selects "No"
+    }
+    action(); // Proceed with the navigation logic
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Pallete.TransparentCol,
+        backgroundColor: appBarColor ?? Pallete.TransparentCol,
         elevation: 0,
+        centerTitle: centerTitle ?? true,
+        title: text_title,
         leading: IconButton(
-          icon: Icon(Icons.home, color: Pallete.MainTextCol),
-          onPressed: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (context) => const CartPage()));
-          },
+          icon: Icon(Icons.home, color: iconColor ?? Pallete.MainTextCol),
+          onPressed:
+              () => _handleNavigation(
+                context,
+                () => Navigator.of(context).pushNamed('/home'),
+              ),
         ),
         actions: [
           Builder(
             builder:
                 (context) => IconButton(
-                  icon: Icon(Icons.menu, color: Pallete.MainTextCol),
+                  icon: Icon(
+                    Icons.menu,
+                    color: appTextColor ?? Pallete.MainTextCol,
+                  ),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
           ),
@@ -48,39 +96,46 @@ class BaseLayout extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(color: Pallete.primaryCol),
-              child: Text(
+              child: const Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.info),
-              title: Text('About'),
-              onTap: () {
-                onScrollToAbout?.call();
-                Navigator.pop(context);
-              },
+              leading: const Icon(Icons.info),
+              title: const Text('About'),
+              onTap:
+                  () => _handleNavigation(
+                    context,
+                    () => Navigator.of(
+                      context,
+                    ).pushNamed('/home', arguments: {'scrollTo': 'about'}),
+                  ),
             ),
             ListTile(
-              leading: Icon(Icons.question_answer),
-              title: Text('Frequently Asked Questions'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                onScrollToFAQ?.call(); // Trigger the callback
-              },
+              leading: const Icon(Icons.question_answer),
+              title: const Text('Frequently Asked Questions'),
+              onTap:
+                  () => _handleNavigation(
+                    context,
+                    () => Navigator.of(
+                      context,
+                    ).pushNamed('/home', arguments: {'scrollTo': 'faq'}),
+                  ),
             ),
             ListTile(
-              leading: Icon(Icons.phone),
-              title: Text('Contact Us'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              leading: const Icon(Icons.phone),
+              title: const Text('Contact Us'),
+              onTap:
+                  () => _handleNavigation(
+                    context,
+                    () => Navigator.of(context).pushNamed('/contact'),
+                  ),
             ),
           ],
         ),
       ),
       body: child,
-      floatingActionButton: floatingActionButton,
     );
   }
 }

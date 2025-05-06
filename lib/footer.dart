@@ -7,6 +7,8 @@ class MyFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 700;
     return Container(
       color: Pallete.TransparentCol,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
@@ -64,15 +66,30 @@ class MyFooter extends StatelessWidget {
             ),
             SizedBox(height: 20), // Space between icons and text
             // Remove Expanded – it conflicts with horizontal scroll
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                FooterLink(text: 'Terms and conditions'),
-                FooterLink(text: 'Privacy Policy'),
-                FooterLink(text: 'Product purchase and use agreement'),
-                FooterLink(text: 'Contact Us'),
-                FooterLink(text: 'Returns & Refund Policy'),
-                FooterLink(text: 'AI Disclosure'),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    FooterLink(text: 'Terms and conditions'),
+                    FooterLink(text: 'Privacy Policy'),
+                    FooterLink(text: 'Product purchase and use agreement'),
+                    FooterLink(text: 'Contact Us'),
+                    FooterLink(text: 'Returns & Refund Policy'),
+                    FooterLink(text: 'AI Disclosure'),
+                  ],
+                ),
+                SizedBox(width: isMobile ? 80 : 250), // Space between columns
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: const [
+                    FooterLink(text: 'About Us'),
+                    FooterLink(text: 'Order Tracking'),
+                    FooterLink(text: 'Cookie Policy'),
+                    FooterLink(text: 'Affiliate Disclosure '),
+                    FooterLink(text: 'Shipping Policy'),
+                  ],
+                ),
               ],
             ),
           ],
@@ -88,12 +105,17 @@ class FooterLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 700;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: SizedBox(
         child: Text(
           text,
-          style: const TextStyle(color: Pallete.footerCol, fontSize: 20),
+          style: TextStyle(
+            color: Pallete.footerCol,
+            fontSize: isMobile ? 12 : 20,
+          ),
           softWrap: true,
         ),
       ),

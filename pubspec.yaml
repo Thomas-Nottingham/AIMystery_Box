@@ -41,6 +41,7 @@ dependencies:
   supabase_flutter: ^2.8.4
   video_player: ^2.9.5
   font_awesome_flutter: ^10.8.0
+  mailer: ^6.4.1
 
 dev_dependencies:
   flutter_test:
@@ -67,10 +68,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/profile_picture.png
-    - assets/images/£10.png
-    - assets/images/£20.png
-    - assets/images/£30.png
-    - assets/images/£50.png
     - assets/images/VideoGift.png
     - assets/videos/mystery_video.mp3
     - assets/images/GiftBackground.png
@@ -85,8 +82,15 @@ flutter:
     - assets/images/Main_Background.png
     - assets/images/Main_Present.png
     - assets/images/gift_bg.png
-
-
+    - assets/images/ChatBackground.png
+    - assets/images/ChatBackground2.png
+    - assets/images/ChatBackgroundLandscape.png
+    - assets/images/profile_picture_leg.png
+    - assets/images/contactUs.png
+    - assets/images/contactUsLandscape.png
+    - assets/images/Cart_Background.png
+    - 'assets/images/Cart_BackgroundLandscape.png'
+    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

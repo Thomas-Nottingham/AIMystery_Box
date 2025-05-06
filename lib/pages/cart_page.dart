@@ -1,4 +1,6 @@
+import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
+import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,68 +9,37 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 800;
     final cart = Provider.of<CartProvider>(context).cart;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Shopping Cart')),
-      body: ListView.builder(
-        itemCount: cart.length,
-        itemBuilder: (context, index) {
-          final cartItem = cart[index];
 
-          return ListTile(
-            title: Text(
-              cartItem['title'].toString(),
-              style: Theme.of(context).textTheme.bodySmall,
+    // Define a custom AppBar for the CartPage
+
+    return BaseLayout(
+      appBarColor: Pallete.whiteColor,
+      iconColor: Pallete.blackColor,
+      appTextColor: Pallete.blackColor,
+      centerTitle: true,
+      text_title: Text(
+        'Checkout and Payment',
+        style: TextStyle(color: Pallete.blackColor),
+      ),
+      child: Stack(
+        children: [
+          // Background Image
+          SizedBox(
+            width: screenWidth,
+            height: screenHeight,
+            child: Image.asset(
+              isMobile
+                  ? 'assets/images/Cart_Background.png'
+                  : 'assets/images/Cart_BackgroundLandscape.png',
+              fit: isMobile ? BoxFit.cover : BoxFit.contain,
+              alignment: Alignment.center,
             ),
-            subtitle: Text('\$${cartItem['price']}'),
-            leading: Image.asset(cartItem['imageUrl'].toString()),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Remove Item'),
-                      content: const Text(
-                        'Are you sure you want to remove this item from the cart?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Close the dialog
-                          },
-                          child: const Text('No',style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Provider.of<CartProvider>(
-                              context,
-                              listen: false,
-                            ).removeProduct(cartItem);
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${cartItem['title']} removed from cart',
-                                ),
-                              ),
-                            ); // Close the dialog
-                          },
-                          child: const Text('Yes', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),),
-                        ),
-                      ],
-                    );
-                  },
-                );
-                //Provider.of<CartProvider>(context, listen: false).removeProduct(cartItem);
-                // Handle item removal from cart
-                //cart.removeAt(index);
-              },
-            ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
