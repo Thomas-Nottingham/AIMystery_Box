@@ -12,19 +12,26 @@ class OpenAIService {
     String userMessage, {
     String? name,
     String? occasion,
-    int? age,
+    String? age,
     String? gender,
     String? interests,
-    double? budget,
+    String? budget,
   }) async {
-    const openAIAPIKey =
-        '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'; // Keep your key safe!
+    const groqAPIKey =
+        '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'; // Replace with your actual Groq API key
 
     if (messages.isEmpty && name != null) {
       final initialPrompt = """
-          You are speaking to $name gender: $gender, aged: $age  budget of $budget. Gather information from them to tailor a gift to them 
-          they are interested in $interests. 
-          """;
+You are speaking to $name gender: $gender, aged: $age budget of $budget. Gather information from them to tailor a gift to them 
+they are interested in $interests You are an assistant helping users find surprise gifts. Follow these rules:
+1. you are speaking directly with the user talk to them but in a normal converational way.
+2. Try and figure out what product to get them.
+3. It has to be a surprise you arent allowed to tell them what it is or could be. 
+4. ask follow up questions in a conversational way.
+5. max 30 word responses.
+6. No clothes, shoes or food.
+7. Remember the budget and be realistic with products they could get with that budget.
+""";
 
       messages.add({'role': 'system', 'content': initialPrompt});
     }
@@ -34,60 +41,41 @@ class OpenAIService {
     final rules = {
       'role': 'system',
       'content': """
-You are an assistant helping users find surprise gifts. Follow these rules:
-1. you are speaking directly with the user speak to them
-2. Never tell the user what gift they are getting. its a surprise.
-3. Ask follow-up questions 
-3. Keep responses concise (max 25 words).
-4. No clothes, shoes or food
-""",
+    Focus on users most recent input
+    """,
     };
 
-    // Remove any previous instance of the rules from the conversation history
     messages.removeWhere((msg) => msg['content'] == rules['content']);
-
     messages.insert(0, rules);
 
-    // ✅ Estimate input tokens
-    int totalInputTokens = 0;
-    for (var msg in messages) {
-      totalInputTokens += estimateTokens(msg['content'] ?? '');
-    }
-
-    const int maxOutputTokens = 120;
-    final estimatedTotalTokens = totalInputTokens + maxOutputTokens;
-
-    // ✅ Estimate cost (GPT-3.5-Turbo pricing as of 2024)
-    final estimatedCost =
-        ((totalInputTokens * 0.0015) + (maxOutputTokens * 0.002)) / 1000;
-
-    // final estimatedCost =
-    //     ((totalInputTokens * 0.01) + (maxOutputTokens * 0.03)) / 1000;
+    // Estimate tokens (roughly)
+    int totalInputTokens = messages.fold(
+      0,
+      (sum, msg) => sum + estimateTokens(msg['content'] ?? ''),
+    );
+    const int maxOutputTokens = 100;
 
     print('🔢 Estimated input tokens: $totalInputTokens');
-    print('🧠 Estimated total tokens (with output): $estimatedTotalTokens');
-    print('💰 Estimated cost: \$${estimatedCost.toStringAsFixed(6)}');
 
     try {
       final res = await http.post(
-        Uri.parse('https://api.openai.com/v1/chat/completions'),
+        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $openAIAPIKey',
+          'Authorization': 'Bearer $groqAPIKey',
         },
         body: jsonEncode({
-          "model": "gpt-3.5-turbo",
+          "model": "llama3-8b-8192", // Groq-supported model
           "messages": messages,
-          "max_tokens": 100,
-          "temperature": 0.3,
+          "max_tokens": maxOutputTokens,
+          "temperature": 0.7,
         }),
       );
 
       if (res.statusCode == 200) {
         final decodedBody = utf8.decode(res.bodyBytes);
         String content =
-            jsonDecode(decodedBody)['choices'][0]['message']['content'];
-        content = content.trim();
+            jsonDecode(decodedBody)['choices'][0]['message']['content'].trim();
 
         messages.add({'role': 'assistant', 'content': content});
         print("messages: $messages");
@@ -97,41 +85,13 @@ You are an assistant helping users find surprise gifts. Follow these rules:
         }
 
         return content;
+      } else {
+        print("❌ Status Code: ${res.statusCode}");
+        print("❌ Response: ${res.body}");
+        return 'An internal error occurred';
       }
-
-      return 'An internal error occurred';
     } catch (e) {
       return e.toString();
     }
   }
-
-  // Future productFinder(String productDetails) async {
-  //   const openAIAPIKey =
-  //       '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';
-  //   final prompt =
-  //       "Can you break these messages down into smaller keywords that we can use to find amazon products online? $productDetails";
-
-  //   final res = await http.post(
-  //     Uri.parse('https://api.openai.com/v1/chat/completions'),
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': 'Bearer $openAIAPIKey',
-  //     },
-  //     body: jsonEncode({
-  //       "model": "gpt-3.5-turbo",
-  //       "messages": [
-  //         {'role': 'user', 'content': prompt},
-  //       ],
-  //       "max_tokens": 30,
-  //       "temperature": 0.7,
-  //     }),
-  //   );
-  //   //print(res.body);
-
-  //   String content = jsonDecode(res.body)['choices'][0]['message']['content'];
-  //   content = content.trim();
-  //   Amazon_Search_Data.add({'content': content});
-
-  //   return null;
-  // }
 }

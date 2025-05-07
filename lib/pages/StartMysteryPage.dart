@@ -208,10 +208,10 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         input,
         name: _responses[0],
         occasion: _responses[1],
-        age: int.parse(_responses[2]),
+        age: (_responses[2]),
         gender: _responses[3],
         interests: _responses[4],
-        budget: double.parse(_responses[5]),
+        budget: (_responses[5]),
       );
 
       // Add the AI's response to the chat

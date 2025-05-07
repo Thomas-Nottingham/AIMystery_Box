@@ -3,14 +3,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 
 class MyFooter extends StatelessWidget {
-  const MyFooter({Key? key}) : super(key: key);
+  final Color? footerCol;
+  final Color? Textcol;
+
+  const MyFooter({Key? key, this.footerCol, this.Textcol}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
     return Container(
-      color: Pallete.TransparentCol,
+      color: footerCol ?? Pallete.TransparentCol,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -101,7 +104,9 @@ class MyFooter extends StatelessWidget {
 
 class FooterLink extends StatelessWidget {
   final String text;
-  const FooterLink({Key? key, required this.text}) : super(key: key);
+  final Color? Textcol;
+  const FooterLink({Key? key, required this.text, this.Textcol})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +118,7 @@ class FooterLink extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            color: Pallete.footerCol,
+            color: Textcol ?? Pallete.footerCol,
             fontSize: isMobile ? 12 : 20,
           ),
           softWrap: true,

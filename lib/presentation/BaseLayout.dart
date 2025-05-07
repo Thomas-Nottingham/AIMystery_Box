@@ -68,6 +68,7 @@ class BaseLayout extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: appBarColor ?? Pallete.TransparentCol,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: centerTitle ?? true,
         title: text_title,
         leading: IconButton(
