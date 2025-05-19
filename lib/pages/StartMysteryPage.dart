@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:SandBox_Gifts_Backup/core/Ai/openai_service.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:SandBox_Gifts_Backup/supabase_client.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/budget_provider.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 final OpenAIService openAIService = OpenAIService();
 
@@ -33,7 +38,35 @@ class _StartMysteryPageState extends State<StartMysteryPage>
   final List<String> _responses = []; // List to store user responses
   int _currentQuestionIndex = 0; // Track the current question index
   final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode(); // Add this to manage focus
+  final FocusNode _focusNode = FocusNode();
+
+  String get budgetResponse {
+    if (_responses.isNotEmpty) {
+      return _responses[5].replaceAll(RegExp(r'[£$€₽₹¥]'), '');
+    }
+    return '';
+  }
+
+  int get ageResponse {
+    if (_responses.isNotEmpty) {
+      return int.tryParse(_responses[2]) ?? 0; // Return 0 if parsing fails
+    }
+    return 0;
+  }
+
+  String get interestResponse {
+    if (_responses.isNotEmpty) {
+      return _responses[4];
+    }
+    return '';
+  }
+
+  String get genderResponse {
+    if (_responses.isNotEmpty) {
+      return _responses[3];
+    }
+    return '';
+  }
 
   late AnimationController _animationController;
   late Animation<double> _bobbingAnimation;
@@ -42,9 +75,23 @@ class _StartMysteryPageState extends State<StartMysteryPage>
   bool _showAddToCartButton = false; // Flag to show the "Add to Cart" button
   bool _questionsCompleted = false; // Flag to track if questions are completed
 
+  // Add this to manage focus
+  bool _isKeyboardVisible = false;
+  late StreamSubscription<bool> keyboardSubscription;
+
   @override
   void initState() {
     super.initState();
+
+    keyboardSubscription = KeyboardVisibilityController().onChange.listen((
+      visible,
+    ) {
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
+
+    openAIService.clearMessages();
 
     // Initialize the AnimationController
     _animationController = AnimationController(
@@ -81,6 +128,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     _animationController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    keyboardSubscription.cancel();
 
     super.dispose();
   }
@@ -162,12 +210,12 @@ class _StartMysteryPageState extends State<StartMysteryPage>
       // Prepare the input for the AI chat
       final input =
           userMessage != null
-              ? _responses.join(", ") + ", " + userMessage
+              ? "${_responses.join(", ")}, $userMessage"
               : _responses.join(", ");
       print("Input sent to AI: $input");
 
       // Send the input to the AI service
-      final response = await openAIService.AIChatBot(input);
+      final response = await openAIService.AIChatBot(input, context: context);
 
       // Add the AI's response to the chat
       setState(() {
@@ -212,6 +260,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         gender: _responses[3],
         interests: _responses[4],
         budget: (_responses[5]),
+        context: context,
       );
 
       // Add the AI's response to the chat
@@ -286,162 +335,177 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final isMobile = screenWidth < 800;
+    return KeyboardVisibilityBuilder(
+      builder: (context, isKeyboardVisible) {
+        return BaseLayout(
+          child: Stack(
+            children: [
+              // Background Image
+              SizedBox(
+                width: screenWidth,
+                height: screenHeight,
+                child: Image.asset(
+                  isMobile
+                      ? 'assets/images/ChatBackground.png'
+                      : 'assets/images/ChatBackgroundLandscape.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
 
-    return BaseLayout(
-      child: Stack(
-        children: [
-          // Background Image
-          SizedBox(
-            width: screenWidth,
-            height: screenHeight,
-            child: Image.asset(
-              isMobile
-                  ? 'assets/images/ChatBackground.png'
-                  : 'assets/images/ChatBackgroundLandscape.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-
-          // Bobbing Animation for Main_Present Image
-          AnimatedBuilder(
-            animation: _bobbingAnimation,
-            builder: (context, child) {
-              return Positioned(
-                top: screenHeight * 0.02 + _bobbingAnimation.value,
-                left: screenWidth / 2 - (screenHeight * 0.2),
-                child: child!,
-              );
-            },
-            child: Image.asset(
-              'assets/images/Main_Present.png',
-              width: screenHeight * 0.4,
-              height: screenHeight * 0.4,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          // Chat Messages
-          Positioned(
-            top: screenHeight * 0.35,
-            left: isMobile ? 20 : screenHeight * 0.42,
-            right: isMobile ? 20 : screenHeight * 0.42,
-            bottom: isMobile ? 85 : 120,
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final message = _messages[index];
-                      final isUser = message['sender'] == 'user';
-                      final isDisclaimer = message['sender'] == 'disclaimer';
-
-                      return Align(
-                        alignment:
-                            isUser
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color:
-                                isUser
-                                    ? Pallete.secondaryCol
-                                    : isDisclaimer
-                                    ? Colors.red
-                                    : Pallete.MainTextCol,
-
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            message['text']!,
-                            style: TextStyle(
-                              color: isUser ? Colors.white : Colors.black,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+              // Bobbing Animation for Main_Present Image
+              if (!isKeyboardVisible)
+                AnimatedBuilder(
+                  animation: _bobbingAnimation,
+                  builder: (context, child) {
+                    return Positioned(
+                      top: screenHeight * 0.02 + _bobbingAnimation.value,
+                      left: screenWidth / 2 - (screenHeight * 0.2),
+                      child: child!,
+                    );
+                  },
+                  child: Image.asset(
+                    'assets/images/Main_Present.png',
+                    width: screenHeight * 0.4,
+                    height: screenHeight * 0.4,
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ],
-            ),
-          ),
 
-          // Text Input Field
-          Positioned(
-            bottom: 20,
-            left:
-                isMobile
-                    ? 20
-                    : screenWidth *
-                        0.2, // Adjust left padding based on isMobile
-            right: isMobile ? 20 : screenWidth * 0.2,
-            child: TextField(
-              controller: _textController,
-              focusNode: _focusNode, // Attach the focus node
-              style: const TextStyle(color: Pallete.blackColor),
-              minLines: isMobile ? 1 : 3,
-              maxLines: isMobile ? 2 : 3,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                hintText: 'Enter your message...',
-                hintStyle: const TextStyle(color: Colors.deepPurple),
-                border: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Pallete.Purps),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Pallete.Purps),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Pallete.Purps),
-                ),
-                filled: true,
-                fillColor: Pallete.MainTextCol,
-              ),
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  handleUserResponse(value);
-                  _textController.clear();
-                  _scrollToBottom();
-                  _focusNode.requestFocus(); // Keep the text field focused
-                }
-              },
-            ),
-          ),
+              // Chat Messages
+              Positioned(
+                top:
+                    isKeyboardVisible
+                        ? 20
+                        : screenHeight *
+                            0.35, // Move chat up when keyboard visible
+                left: isMobile ? 20 : screenHeight * 0.42,
+                right: isMobile ? 20 : screenHeight * 0.42,
+                bottom:
+                    isMobile
+                        ? 85 + MediaQuery.of(context).viewInsets.bottom
+                        : 120 + MediaQuery.of(context).viewInsets.bottom,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          final isUser = message['sender'] == 'user';
+                          final isDisclaimer =
+                              message['sender'] == 'disclaimer';
 
-          // Add to Cart Button
-          if (_showAddToCartButton)
-            Positioned(
-              top: 20,
-              left:
-                  isMobile
-                      ? 20
-                      : screenWidth *
-                          0.4, // Adjust left padding based on isMobile
-              right: isMobile ? 20 : screenWidth * 0.4,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  onTap();
-                  Navigator.of(context).pushNamed('/cart_page');
-                },
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text('Add to Cart'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Pallete.secondaryCol,
-                  foregroundColor: Colors.white,
-                  textStyle: const TextStyle(fontSize: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                          return Align(
+                            alignment:
+                                isUser
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color:
+                                    isUser
+                                        ? Pallete.secondaryCol
+                                        : isDisclaimer
+                                        ? Colors.red
+                                        : Pallete.MainTextCol,
+
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                message['text']!,
+                                style: TextStyle(
+                                  color: isUser ? Colors.white : Colors.black,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-        ],
-      ),
+
+              // Text Input Field
+              Positioned(
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    20, // Move input up when keyboard visible
+                left: isMobile ? 20 : screenWidth * 0.2,
+                right: isMobile ? 20 : screenWidth * 0.2,
+                child: TextField(
+                  controller: _textController,
+                  focusNode: _focusNode,
+                  style: const TextStyle(color: Pallete.blackColor),
+                  minLines: isMobile ? 1 : 3,
+                  maxLines: isMobile ? 2 : 3,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your message...',
+                    hintStyle: const TextStyle(color: Colors.deepPurple),
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Pallete.Purps),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Pallete.Purps),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Pallete.Purps),
+                    ),
+                    filled: true,
+                    fillColor: Pallete.MainTextCol,
+                  ),
+                  onSubmitted: (value) {
+                    if (value.trim().isNotEmpty) {
+                      handleUserResponse(value);
+                      _textController.clear();
+                      _scrollToBottom();
+                      _focusNode.requestFocus();
+                    }
+                  },
+                ),
+              ),
+
+              // Add to Cart Button (unchanged)
+              if (_showAddToCartButton)
+                Positioned(
+                  top: 20,
+                  left: isMobile ? 20 : screenWidth * 0.4,
+                  right: isMobile ? 20 : screenWidth * 0.4,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      onTap();
+                      final budgetProvider = Provider.of<BudgetProvider>(
+                        context,
+                        listen: false,
+                      );
+                      budgetProvider.setBudget(budgetResponse);
+                      budgetProvider.setUserAge(ageResponse);
+                      budgetProvider.setUserGender(genderResponse);
+                      budgetProvider.setUserInterests(interestResponse);
+                      budgetProvider.setProductDetails('Surprise Gift');
+                      Navigator.of(context).pushNamed('/cart_page');
+                    },
+                    icon: const Icon(Icons.shopping_cart),
+                    label: const Text('Add to Cart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Pallete.secondaryCol,
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(fontSize: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

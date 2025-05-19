@@ -6,7 +6,7 @@ class MyFooter extends StatelessWidget {
   final Color? footerCol;
   final Color? Textcol;
 
-  const MyFooter({Key? key, this.footerCol, this.Textcol}) : super(key: key);
+  const MyFooter({super.key, this.footerCol, this.Textcol});
 
   @override
   Widget build(BuildContext context) {
@@ -20,81 +20,89 @@ class MyFooter extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.start, // Align items to the start
-              children: const [
-                // Instagram Icon
-                // Add horizontal spacing
+            // Use Wrap for icons to prevent overflow on mobile
+            Wrap(
+              spacing: isMobile ? 16 : 24,
+              runSpacing: 12,
+              children: [
                 Icon(
                   FontAwesomeIcons.instagram,
                   color: Pallete.footerCol,
-                  size: 30, // Slightly larger size for better visibility
+                  size: isMobile ? 22 : 30,
                 ),
-
-                // Twitter Icon
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                  ), // Add horizontal spacing
-                  child: Icon(
-                    FontAwesomeIcons.xTwitter,
-                    color: Pallete.footerCol,
-                    size: 30,
-                  ),
+                Icon(
+                  FontAwesomeIcons.xTwitter,
+                  color: Pallete.footerCol,
+                  size: isMobile ? 22 : 30,
                 ),
-                // YouTube Icon
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                  ), // Add horizontal spacing
-                  child: Icon(
-                    FontAwesomeIcons.youtube,
-                    color: Pallete.footerCol,
-                    size: 30,
-                  ),
+                Icon(
+                  FontAwesomeIcons.youtube,
+                  color: Pallete.footerCol,
+                  size: isMobile ? 22 : 30,
                 ),
-                // LinkedIn Icon
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                  ), // Add horizontal spacing
-                  child: Icon(
-                    FontAwesomeIcons.linkedin,
-                    color: Pallete.footerCol,
-                    size: 30,
-                  ),
+                Icon(
+                  FontAwesomeIcons.linkedin,
+                  color: Pallete.footerCol,
+                  size: isMobile ? 22 : 30,
                 ),
               ],
             ),
-            SizedBox(height: 20), // Space between icons and text
-            // Remove Expanded – it conflicts with horizontal scroll
-            Row(
-              children: [
-                Column(
+            SizedBox(height: 20),
+            // Stack columns vertically on mobile
+            isMobile
+                ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    FooterLink(text: 'Terms and conditions'),
-                    FooterLink(text: 'Privacy Policy'),
-                    FooterLink(text: 'Product purchase and use agreement'),
-                    FooterLink(text: 'Contact Us'),
-                    FooterLink(text: 'Returns & Refund Policy'),
-                    FooterLink(text: 'AI Disclosure'),
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        FooterLink(text: 'Terms and conditions'),
+                        FooterLink(text: 'Privacy Policy'),
+                        FooterLink(text: 'Product purchase and use agreement'),
+                        FooterLink(text: 'Contact Us'),
+                        FooterLink(text: 'Returns & Refund Policy'),
+                        FooterLink(text: 'AI Disclosure'),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        FooterLink(text: 'About Us'),
+                        FooterLink(text: 'Order Tracking'),
+                        FooterLink(text: 'Cookie Policy'),
+                        FooterLink(text: 'Affiliate Disclosure '),
+                        FooterLink(text: 'Shipping Policy'),
+                      ],
+                    ),
+                  ],
+                )
+                : Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        FooterLink(text: 'Terms and conditions'),
+                        FooterLink(text: 'Privacy Policy'),
+                        FooterLink(text: 'Product purchase and use agreement'),
+                        FooterLink(text: 'Contact Us'),
+                        FooterLink(text: 'Returns & Refund Policy'),
+                        FooterLink(text: 'AI Disclosure'),
+                      ],
+                    ),
+                    SizedBox(width: 250),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: const [
+                        FooterLink(text: 'About Us'),
+                        FooterLink(text: 'Order Tracking'),
+                        FooterLink(text: 'Cookie Policy'),
+                        FooterLink(text: 'Affiliate Disclosure '),
+                        FooterLink(text: 'Shipping Policy'),
+                      ],
+                    ),
                   ],
                 ),
-                SizedBox(width: isMobile ? 80 : 250), // Space between columns
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    FooterLink(text: 'About Us'),
-                    FooterLink(text: 'Order Tracking'),
-                    FooterLink(text: 'Cookie Policy'),
-                    FooterLink(text: 'Affiliate Disclosure '),
-                    FooterLink(text: 'Shipping Policy'),
-                  ],
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -105,8 +113,7 @@ class MyFooter extends StatelessWidget {
 class FooterLink extends StatelessWidget {
   final String text;
   final Color? Textcol;
-  const FooterLink({Key? key, required this.text, this.Textcol})
-    : super(key: key);
+  const FooterLink({super.key, required this.text, this.Textcol});
 
   @override
   Widget build(BuildContext context) {

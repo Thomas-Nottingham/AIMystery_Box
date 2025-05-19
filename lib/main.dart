@@ -2,17 +2,28 @@ import 'package:SandBox_Gifts_Backup/pages/Contact_us.dart';
 import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage.dart';
 import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
 import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
+import 'package:SandBox_Gifts_Backup/secrets.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
+
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
 import 'package:SandBox_Gifts_Backup/supabase_client.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'providers/budget_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey = stripePublishableKey;
+  await Stripe.instance.applySettings();
   await initializeSupabase();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => BudgetProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

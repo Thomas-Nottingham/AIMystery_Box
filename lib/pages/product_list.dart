@@ -6,7 +6,7 @@ import 'package:SandBox_Gifts_Backup/global_variables.dart';
 import 'package:video_player/video_player.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({super.key});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -336,7 +336,7 @@ class _ProductListState extends State<ProductList>
                   const Divider(color: Colors.white38),
                 ],
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

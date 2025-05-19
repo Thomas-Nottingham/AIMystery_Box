@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart'; // Import for BuildContext
+import '../../providers/budget_provider.dart'; // Import BudgetProvider
 
 class OpenAIService {
   final List<Map<String, String>> messages = []; // Conversation history
@@ -8,8 +11,14 @@ class OpenAIService {
     return (text.length / 4).ceil(); // Rough average: 1 token = ~4 characters
   }
 
+  // Method to clear conversation history
+  void clearMessages() {
+    messages.clear();
+  }
+
   Future<String> AIChatBot(
     String userMessage, {
+    required BuildContext context, // Add BuildContext to access BudgetProvider
     String? name,
     String? occasion,
     String? age,
@@ -18,14 +27,15 @@ class OpenAIService {
     String? budget,
   }) async {
     const groqAPIKey =
-        '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'; // Replace with your actual Groq API key
+        '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'; // Replace with your actual Groq API key
 
     if (messages.isEmpty && name != null) {
       final initialPrompt = """
 You are speaking to $name gender: $gender, aged: $age budget of $budget. Gather information from them to tailor a gift to them 
 they are interested in $interests You are an assistant helping users find surprise gifts. Follow these rules:
-1. you are speaking directly with the user talk to them but in a normal converational way.
+1. you are speaking directly with the user talk to them.
 2. Try and figure out what product to get them.
+3. you only have 10 messages to converse with and ideally around message 5 you want to tell them you have enough information.
 3. It has to be a surprise you arent allowed to tell them what it is or could be. 
 4. ask follow up questions in a conversational way.
 5. max 30 word responses.
@@ -68,7 +78,7 @@ they are interested in $interests You are an assistant helping users find surpri
           "model": "llama3-8b-8192", // Groq-supported model
           "messages": messages,
           "max_tokens": maxOutputTokens,
-          "temperature": 0.7,
+          "temperature": 0.4,
         }),
       );
 
@@ -84,11 +94,18 @@ they are interested in $interests You are an assistant helping users find surpri
           messages.removeRange(3, messages.length - 0);
         }
 
+        // Save conversation history to BudgetProvider
+        final budgetProvider = Provider.of<BudgetProvider>(
+          context,
+          listen: false,
+        );
+        budgetProvider.setConversationHistory(jsonEncode(messages));
+
         return content;
       } else {
         print("❌ Status Code: ${res.statusCode}");
         print("❌ Response: ${res.body}");
-        return 'An internal error occurred';
+        return 'Are you going to quickly? Something has gone wrong. ';
       }
     } catch (e) {
       return e.toString();

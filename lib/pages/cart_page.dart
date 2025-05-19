@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:SandBox_Gifts_Backup/footer.dart';
+import '../providers/budget_provider.dart';
+import 'package:SandBox_Gifts_Backup/Stripe/payment_service.dart';
+import 'package:uuid/uuid.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -22,18 +24,62 @@ class _CartPageState extends State<CartPage> {
 
   final nameController = TextEditingController();
   final emailController = TextEditingController();
+  final uuiD = Uuid();
+  late final String foreignKey; // Declare foreignKey as late
 
-  void _handleCheckout() {
-    if (_isTermsAgreed && _isPrivacyAgreed) {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<BudgetProvider>(context, listen: false).loadFromPreferences();
+    foreignKey = uuiD.v4(); // Initialize foreignKey in initState
+  }
+
+  void _handleCheckout(String budget, String title) async {
+    final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+
+    if (!_isTermsAgreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please agree to the terms and conditions.')),
+      );
+      return;
+    }
+
+    if (!_isPrivacyAgreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please agree to the privacy policy.')),
+      );
+      return;
+    }
+
+    if (nameController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Processing payment...')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please agree to the terms and privacy policy.'),
-        ),
+      ).showSnackBar(SnackBar(content: Text('Please fill in your name.')));
+      return;
+    }
+
+    try {
+      // Parse budget and convert to cents
+      final double parsedBudget = double.parse(budget);
+      final int amountInCents = (parsedBudget * 100).toInt();
+
+      // Redirect to Stripe Checkout
+      await PaymentService.redirectToCheckout(
+        amountInCents,
+        'gbp',
+        metadata: {
+          'foreignKey': foreignKey, // Send the foreign key to Stripe
+          'name': nameController.text,
+          'interests': budgetProvider.userInterests,
+          'age': budgetProvider.userAge,
+          'gender': budgetProvider.userGender,
+          'conversationHistory': budgetProvider.conversationHistory,
+        },
       );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Invalid budget value: $e')));
     }
   }
 
@@ -167,6 +213,9 @@ class _CartPageState extends State<CartPage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final isMobile = screenWidth < 800;
     final cart = Provider.of<CartProvider>(context).cart;
+    final budgetProvider = Provider.of<BudgetProvider>(context);
+    final budget = budgetProvider.budget;
+    final productDetails = budgetProvider.productDetails;
 
     return BaseLayout(
       appBarColor: Pallete.whiteColor,
@@ -215,7 +264,7 @@ class _CartPageState extends State<CartPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Order Summary',
+                            'Order Summary: Surprise Gift',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -235,7 +284,7 @@ class _CartPageState extends State<CartPage> {
                                 ),
                               ),
                               Text(
-                                '£10',
+                                "£$budget",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -244,14 +293,11 @@ class _CartPageState extends State<CartPage> {
                               ),
                             ],
                           ),
+
                           SizedBox(height: 20),
                           _buildTextField(
                             "Your Name",
                             controller: nameController,
-                          ),
-                          _buildTextField(
-                            "Your Email",
-                            controller: emailController,
                           ),
                           SizedBox(height: 20),
                           Row(
@@ -380,7 +426,9 @@ class _CartPageState extends State<CartPage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _handleCheckout,
+                              onPressed:
+                                  () =>
+                                      _handleCheckout(budget, "Surprise Gift"),
                               style: ElevatedButton.styleFrom(
                                 padding: EdgeInsets.symmetric(vertical: 15),
                                 backgroundColor: Pallete.Purps,
@@ -417,8 +465,10 @@ class _CartPageState extends State<CartPage> {
     required TextEditingController controller,
     int maxLines = 1,
     int? maxLength,
-    bool showCounter = true,
   }) {
+    if (hintText == "Your Email")
+      return SizedBox.shrink(); // Remove email input
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
