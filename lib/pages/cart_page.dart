@@ -148,53 +148,91 @@ class _CartPageState extends State<CartPage> {
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       FooterLink(
                         text: 'Terms and Conditions',
                         Textcol: Pallete.blackColor,
+
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Privacy Policy',
                         Textcol: Pallete.blackColor,
+
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Product purchase and use agreement',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Contact Us',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Returns & Refund Policy',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'AI Disclosure',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                     ],
                   ),
                   SizedBox(width: isMobile ? 80 : 250), // Space between columns
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      FooterLink(text: 'About Us', Textcol: Pallete.blackColor),
+                    children: [
+                      FooterLink(
+                        text: 'About Us',
+                        Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
+                      ),
                       FooterLink(
                         text: 'Order Tracking',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Cookie Policy',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Affiliate Disclosure ',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                       FooterLink(
                         text: 'Shipping Policy',
                         Textcol: Pallete.blackColor,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/privacy_policy');
+                        },
                       ),
                     ],
                   ),
@@ -375,7 +413,7 @@ class _CartPageState extends State<CartPage> {
                                               ..onTap = () {
                                                 Navigator.pushNamed(
                                                   context,
-                                                  '/home',
+                                                  '/privacy_policy',
                                                 );
                                               },
                                       ),

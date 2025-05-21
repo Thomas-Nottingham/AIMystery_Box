@@ -1,7 +1,10 @@
 import 'package:SandBox_Gifts_Backup/pages/Contact_us.dart';
 import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage.dart';
 import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
+import 'package:SandBox_Gifts_Backup/pages/cookie_policy.dart';
+import 'package:SandBox_Gifts_Backup/pages/privacy_policy_page.dart';
 import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
+import 'package:SandBox_Gifts_Backup/pages/terms_and_conditions.dart';
 import 'package:SandBox_Gifts_Backup/secrets.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 
@@ -12,12 +15,14 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/budget_provider.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey = stripePublishableKey;
   await Stripe.instance.applySettings();
   await initializeSupabase();
+  usePathUrlStrategy();
   runApp(
     ChangeNotifierProvider(
       create: (_) => BudgetProvider(),
@@ -34,7 +39,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => CartProvider(),
       child: MaterialApp(
-        title: 'Shopping App',
+        title: 'The Gift Vaults',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           scaffoldBackgroundColor: Pallete.gradientBackground.colors.first,
@@ -81,18 +86,11 @@ class MyApp extends StatelessWidget {
         initialRoute: '/home',
         onGenerateRoute: (settings) {
           if (settings.name == '/startMysteryPage') {
-            return PageRouteBuilder(
-              transitionDuration: const Duration(milliseconds: 500),
-              pageBuilder: (context, animation, secondaryAnimation) {
-                return ScaleTransition(
-                  scale: animation,
-                  child: StartMysteryPage(),
-                );
-              },
+            return MaterialPageRoute(
+              builder: (_) => StartMysteryPage(),
+              settings: settings,
             );
           }
-
-          // Add other routes here
           return null;
         },
         routes: {
@@ -100,6 +98,9 @@ class MyApp extends StatelessWidget {
           '/startMysteryPage': (context) => StartMysteryPage(),
           '/contact': (context) => const ContactUs(),
           '/cart_page': (context) => const CartPage(),
+          '/privacy_policy': (context) => const PrivacyPolicyPage(),
+          '/terms_and_conditions': (context) => const TermsAndConditionsPage(),
+          '/cookies_policy': (context) => const CookiePolicyPage(),
 
           // Navigate to StartMysteryPage with the AI response
         },

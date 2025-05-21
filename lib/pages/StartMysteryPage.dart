@@ -74,6 +74,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
 
   bool _showAddToCartButton = false; // Flag to show the "Add to Cart" button
   bool _questionsCompleted = false; // Flag to track if questions are completed
+  bool _showNavigateCartBtn = true;
 
   // Add this to manage focus
   bool _isKeyboardVisible = false;
@@ -186,6 +187,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         _showAddToCartButton = true; // Show the "Add to Cart" button
         _questionsCompleted = true; // Mark questions as completed
         poopie = true;
+        _showNavigateCartBtn = true;
 
         // Add the disclaimer message
         _messages.add({
@@ -494,6 +496,26 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                     },
                     icon: const Icon(Icons.shopping_cart),
                     label: const Text('Add to Cart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Pallete.secondaryCol,
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(fontSize: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                  ),
+                ),
+              if (_showNavigateCartBtn)
+                Positioned(
+                  top: 600,
+                  left: isMobile ? 20 : screenWidth * 0.4,
+                  right: isMobile ? 20 : screenWidth * 0.4,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      onTap();
+                      Navigator.of(context).pushNamed('/cart_page');
+                    },
+                    icon: const Icon(Icons.shopping_cart),
+                    label: const Text('Navigate to Cart for testing'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Pallete.secondaryCol,
                       foregroundColor: Colors.white,

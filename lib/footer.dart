@@ -12,6 +12,7 @@ class MyFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
+
     return Container(
       color: footerCol ?? Pallete.TransparentCol,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
@@ -20,7 +21,6 @@ class MyFooter extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Use Wrap for icons to prevent overflow on mobile
             Wrap(
               spacing: isMobile ? 16 : 24,
               runSpacing: 12,
@@ -48,31 +48,107 @@ class MyFooter extends StatelessWidget {
               ],
             ),
             SizedBox(height: 20),
-            // Stack columns vertically on mobile
             isMobile
                 ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        FooterLink(text: 'Terms and conditions'),
-                        FooterLink(text: 'Privacy Policy'),
-                        FooterLink(text: 'Product purchase and use agreement'),
-                        FooterLink(text: 'Contact Us'),
-                        FooterLink(text: 'Returns & Refund Policy'),
-                        FooterLink(text: 'AI Disclosure'),
+                      children: [
+                        FooterLink(
+                          text: 'Terms and conditions',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/terms_and_conditions',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Privacy Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Cookies Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/cookies_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Contact Us',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Returns & Refund Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'AI Disclosure',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        FooterLink(text: 'About Us'),
-                        FooterLink(text: 'Order Tracking'),
-                        FooterLink(text: 'Cookie Policy'),
-                        FooterLink(text: 'Affiliate Disclosure '),
-                        FooterLink(text: 'Shipping Policy'),
+                      children: [
+                        FooterLink(
+                          text: 'About Us',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Order Tracking',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Cookie Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Affiliate Disclosure',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Shipping Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
                       ],
                     ),
                   ],
@@ -81,24 +157,101 @@ class MyFooter extends StatelessWidget {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        FooterLink(text: 'Terms and conditions'),
-                        FooterLink(text: 'Privacy Policy'),
-                        FooterLink(text: 'Product purchase and use agreement'),
-                        FooterLink(text: 'Contact Us'),
-                        FooterLink(text: 'Returns & Refund Policy'),
-                        FooterLink(text: 'AI Disclosure'),
+                      children: [
+                        FooterLink(
+                          text: 'Terms and conditions',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/terms_and_conditions',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Privacy Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Cookies Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/cookies_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Contact Us',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Returns & Refund Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'AI Disclosure',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
                       ],
                     ),
                     SizedBox(width: 250),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: const [
-                        FooterLink(text: 'About Us'),
-                        FooterLink(text: 'Order Tracking'),
-                        FooterLink(text: 'Cookie Policy'),
-                        FooterLink(text: 'Affiliate Disclosure '),
-                        FooterLink(text: 'Shipping Policy'),
+                      children: [
+                        FooterLink(
+                          text: 'About Us',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Order Tracking',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Cookie Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Affiliate Disclosure',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
+                        FooterLink(
+                          text: 'Shipping Policy',
+                          onTap:
+                              () => Navigator.pushNamed(
+                                context,
+                                '/privacy_policy',
+                              ),
+                        ),
                       ],
                     ),
                   ],
@@ -113,22 +266,34 @@ class MyFooter extends StatelessWidget {
 class FooterLink extends StatelessWidget {
   final String text;
   final Color? Textcol;
-  const FooterLink({super.key, required this.text, this.Textcol});
+  final VoidCallback onTap;
+
+  const FooterLink({
+    super.key,
+    required this.text,
+    this.Textcol,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: SizedBox(
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Textcol ?? Pallete.footerCol,
-            fontSize: isMobile ? 12 : 20,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click, // 👈 Changes cursor on hover
+        child: GestureDetector(
+          onTap: onTap,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Textcol ?? Pallete.footerCol,
+              fontSize: isMobile ? 12 : 20,
+              decoration: TextDecoration.underline,
+            ),
           ),
-          softWrap: true,
         ),
       ),
     );

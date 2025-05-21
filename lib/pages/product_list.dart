@@ -364,7 +364,7 @@ class _ProductListState extends State<ProductList>
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height,
                       child: Image.asset(
-                        'assets/images/gift_bg.png',
+                        'assets/images/bg_image.png',
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
                       ),
