@@ -314,4 +314,51 @@ Follow these rules:
     }
     return "Could not generate conversation summary.";
   }
+
+  static const String transcriptCleanerPrompt = """
+You will be given a JSON chat log between a user and an AI assistant. Your task is to extract and summarize the dialogue between them in a simple back-and-forth format, omitting all metadata, roles, and repeated information.
+Output Rules:
+- dont show / [] {} or "" in the output
+- remove the paragraph at the start which starts with "You are speaking to"
+- Show only the assistant and user messages.
+- Keep the sequence and flow of the conversation.
+- Remove any duplicated input or answers from the user's side.
+- Do not include system messages or instructions.
+- Format like a chat transcript using this structure:
+Assistant: [Message]
+User: [Message]
+""";
+
+  // --- NEW METHOD TO CLEAN THE HISTORY ---
+  Future<String> createCleanTranscript(String rawJsonHistory) async {
+    // We send the cleaning prompt and the messy history to the AI
+    final messagesForCleaning = [
+      {'role': 'system', 'content': transcriptCleanerPrompt},
+      {'role': 'user', 'content': rawJsonHistory},
+    ];
+
+    try {
+      final res = await http.post(
+        Uri.parse('/api/openai'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "model": "gpt-4o",
+          "messages": messagesForCleaning,
+          "max_tokens": 300, // Allow for a decent length summary
+          "temperature": 0.1,
+        }),
+      );
+
+      if (res.statusCode == 200) {
+        return jsonDecode(
+          utf8.decode(res.bodyBytes),
+        )['choices'][0]['message']['content'];
+      }
+    } catch (e) {
+      print('Error creating clean transcript: $e');
+    }
+    return "Could not generate a clean transcript.";
+  }
+
+  // --- All your other existing methods remain here unchanged ---
 }

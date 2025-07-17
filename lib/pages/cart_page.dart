@@ -65,7 +65,7 @@ class _CartPageState extends State<CartPage> {
         'giftSummary': budgetProvider.giftSummary,
       };
 
-      // 1. Get the full, long conversation history from your provider
+      // 1. Get the full conversation history from the provider
       final String fullConversation = budgetProvider.conversationHistory;
 
       // 2. Split the long string into chunks of 480 characters
@@ -76,7 +76,6 @@ class _CartPageState extends State<CartPage> {
         if (end > fullConversation.length) {
           end = fullConversation.length;
         }
-        // Add each chunk to metadata as convo_part_0, convo_part_1, etc.
         metadata['convo_part_$i'] = fullConversation.substring(start, end);
       }
 
