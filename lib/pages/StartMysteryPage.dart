@@ -1,487 +1,525 @@
 import 'dart:async';
-
-import 'package:SandBox_Gifts_Backup/core/Ai/openai_service.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:SandBox_Gifts_Backup/core/Ai/openai_serviceV2.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
-import 'package:SandBox_Gifts_Backup/supabase_client.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../providers/budget_provider.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-
-final OpenAIService openAIService = OpenAIService();
 
 class StartMysteryPage extends StatefulWidget {
-  //final String aiResponse;
-
-  const StartMysteryPage({
-    super.key,
-    //required this.aiResponse,
-  });
+  const StartMysteryPage({super.key});
 
   @override
   State<StartMysteryPage> createState() => _StartMysteryPageState();
 }
 
 class _StartMysteryPageState extends State<StartMysteryPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _textController = TextEditingController();
-  final List<Map<String, String>> _messages = []; // List to store chat messages
+  final List<Map<String, String>> _messages = [];
   final List<String> _questions = [
     "What is your name?",
-    "What is the occasion?",
-    "What is your age?",
-    "What is your gender?",
-    "What are some of your hobbies/interests?",
-    "Last but not least, how much are you willing to spend on this gift? Minimum £10 and Maximum £50",
-  ]; // List of questions
-  final List<String> _responses = []; // List to store user responses
-  int _currentQuestionIndex = 0; // Track the current question index
+    "How much would you like to spend? Within the boundaries of £15 and £50",
+  ];
+  final List<String> _responses = [];
+  int _currentQuestionIndex = 0;
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
 
-  String get budgetResponse {
-    if (_responses.isNotEmpty) {
-      return _responses[5].replaceAll(RegExp(r'[£$€₽₹¥]'), '');
-    }
-    return '';
-  }
-
-  int get ageResponse {
-    if (_responses.isNotEmpty) {
-      return int.tryParse(_responses[2]) ?? 0; // Return 0 if parsing fails
-    }
-    return 0;
-  }
-
-  String get interestResponse {
-    if (_responses.isNotEmpty) {
-      return _responses[4];
-    }
-    return '';
-  }
-
-  String get genderResponse {
-    if (_responses.isNotEmpty) {
-      return _responses[3];
-    }
-    return '';
-  }
+  String get budgetResponse =>
+      _responses.length > 1
+          ? _responses[1].replaceAll(RegExp(r'[£$€₽₹¥]'), '')
+          : '';
+  int get ageResponse =>
+      _responses.length > 2 ? int.tryParse(_responses[2]) ?? 0 : 0;
+  String get interestResponse => _responses.length > 4 ? _responses[4] : '';
+  String get genderResponse => _responses.length > 3 ? _responses[3] : '';
 
   late AnimationController _animationController;
   late Animation<double> _bobbingAnimation;
-  bool poopie = false; // Flag to track if the user has answered the questions
+  bool poopie = false;
+  bool _showAddToCartButton = false;
+  bool _questionsCompleted = false;
 
-  bool _showAddToCartButton = false; // Flag to show the "Add to Cart" button
-  bool _questionsCompleted = false; // Flag to track if questions are completed
-  bool _showNavigateCartBtn = true;
+  // --- THIS LINE IS DELETED ---
+  // final OpenAIService openAIService = OpenAIService();
 
-  // Add this to manage focus
-  bool _isKeyboardVisible = false;
-  late StreamSubscription<bool> keyboardSubscription;
+  bool _isProcessing = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
-    keyboardSubscription = KeyboardVisibilityController().onChange.listen((
-      visible,
-    ) {
-      setState(() {
-        _isKeyboardVisible = visible;
-      });
-    });
-
+    // --- USE THE SHARED SERVICE ---
+    final openAIService = Provider.of<OpenAIService>(context, listen: false);
     openAIService.clearMessages();
 
-    // Initialize the AnimationController
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2), // Duration of one bobbing cycle
-    )..repeat(reverse: true); // Repeat the animation in reverse
-
-    // Define the Tween for the bobbing effect
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
     _bobbingAnimation = Tween<double>(begin: 0, end: 20).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut, // Smooth up-and-down motion
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    _focusNode.addListener(_onFocusChange);
 
-    // Add the initial AI welcome message
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() {
         _messages.add({
           'sender': 'ai',
           'text':
-              "Hi! I'm here to help you find the perfect gift. Let's start with a few questions to tailor the gift to your needs!",
+              "Hi! I'm your guide to help you find the perfect gift from our vaults.",
         });
+      });
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (!mounted) return;
+      setState(() {
+        _messages.add({
+          'sender': 'ai',
+          'text':
+              "We have thousands of surprises waiting to be discovered, but first let's run a few of the basic questions.",
+        });
+      });
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (!mounted) return;
+      setState(() {
         _messages.add({
           'sender': 'ai',
           'text': _questions[_currentQuestionIndex],
         });
+        _isProcessing = false;
       });
+      _requestInputFocus();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
     _scrollController.dispose();
+    _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
-    keyboardSubscription.cancel();
-
+    _textController.dispose();
     super.dispose();
   }
 
-  Future<void> handleUserResponse(String message) async {
-    // Add the user's response to the chat
-    setState(() {
-      _messages.add({'sender': 'user', 'text': message});
-      _responses.add(
-        message,
-      ); // Append the user's response to the responses list
-    });
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    if (mounted &&
+        _focusNode.hasFocus &&
+        MediaQuery.of(context).viewInsets.bottom > 0) {}
+  }
 
-    // Scroll to the bottom to show the latest message
+  void _onFocusChange() {
+    if (!mounted) return;
+    if (_focusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (!mounted) return;
+        if (_focusNode.hasFocus &&
+            (MediaQuery.of(context).viewInsets.bottom > 0)) {
+          _scrollToBottom(isInitialFocus: true);
+        } else if (_focusNode.hasFocus) {
+          _scrollToBottom(isInitialFocus: true);
+        }
+      });
+    }
+  }
+
+  void _requestInputFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
+  }
+
+  Future<void> handleUserResponse(String message) async {
+    if (!mounted || _isProcessing) return;
+    final String trimmedMessage = message.trim();
+    if (trimmedMessage.isEmpty) return;
+
+    setState(() {
+      _messages.add({'sender': 'user', 'text': trimmedMessage});
+      _responses.add(trimmedMessage);
+      _isProcessing = true;
+    });
+    _textController.clear();
     _scrollToBottom();
 
-    // Check if the current question is the price question
-    if (poopie == false &&
-        _questions[_currentQuestionIndex] ==
-            "Last but not least, how much are you willing to spend on this gift? Minimum £10 and Maximum £50") {
-      final sanitizedMessage = message.replaceAll(RegExp(r'[£$€₽₹¥]'), '');
-      final price = double.tryParse(sanitizedMessage);
+    try {
+      if (poopie == false && _currentQuestionIndex == _questions.length - 1) {
+        final sanitizedMessage = trimmedMessage.replaceAll(
+          RegExp(r'[£$€₽₹¥]'),
+          '',
+        );
+        final price = double.tryParse(sanitizedMessage);
+        if (price == null || price < 15 || price > 50) {
+          if (!mounted) return;
+          setState(() {
+            _messages.add({
+              'sender': 'ai',
+              'text': "Invalid input. Please enter a number between 15 and 50.",
+            });
+            _isProcessing = false;
+          });
+          _scrollToBottom();
+          _responses.removeLast();
+          _requestInputFocus();
+          return;
+        }
+      }
 
-      if (price == null || price < 10 || price > 50) {
-        // If the input is invalid, repeat the question with an error message
+      if (_currentQuestionIndex < _questions.length - 1) {
+        if (!mounted) return;
+        await Future.delayed(const Duration(milliseconds: 500));
         setState(() {
+          _currentQuestionIndex++;
           _messages.add({
             'sender': 'ai',
-            'text': "Invalid input. Please enter a number between 10 and 50.",
+            'text': _questions[_currentQuestionIndex],
           });
+          _isProcessing = false;
         });
         _scrollToBottom();
-        return; // Exit the method to wait for a valid response
+        _requestInputFocus();
+      } else if (!_questionsCompleted) {
+        if (!mounted) return;
+        setState(() {
+          _questionsCompleted = true;
+          poopie = true;
+        });
+        await _FirstAiChat();
+        if (!mounted) return;
+        _scrollToBottom();
+      } else {
+        await _startAIChat(trimmedMessage);
+        if (!mounted) return;
+        _scrollToBottom();
       }
-    }
-
-    // Move to the next question or finish the conversation
-    if (_currentQuestionIndex < _questions.length - 1) {
-      setState(() {
-        _currentQuestionIndex++;
-        _messages.add({
-          'sender': 'ai',
-          'text': _questions[_currentQuestionIndex],
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
         });
-      });
-      _scrollToBottom();
-    } else if (!_questionsCompleted) {
-      // Final AI response after all questions are answered
-      setState(() {
-        _messages.add({
-          'sender': 'ai',
-          'text':
-              "Thank you for answering all the questions! I'll now find the perfect gift for you.",
-        });
-        _showAddToCartButton = true; // Show the "Add to Cart" button
-        _questionsCompleted = true; // Mark questions as completed
-        poopie = true;
-        _showNavigateCartBtn = true;
-
-        // Add the disclaimer message
-        _messages.add({
-          'sender':
-              'disclaimer', // Use a custom sender to style the message in red
-          'text':
-              "You can add to cart, but the gift may be more random. You can of course do this, but if you want to tailor further, continue speaking to me.",
-        });
-      });
-      _scrollToBottom();
-
-      // Send the first AI message to _ContinueAiChat
-      await _FirstAiChat();
-    } else {
-      // If questions are already completed, continue the AI chat
-      await _startAIChat(message);
+        _requestInputFocus();
+      }
     }
   }
 
   Future<void> _startAIChat([String? userMessage]) async {
+    final openAIService = Provider.of<OpenAIService>(context, listen: false);
     try {
-      // Prepare the input for the AI chat
       final input =
           userMessage != null
               ? "${_responses.join(", ")}, $userMessage"
               : _responses.join(", ");
-      print("Input sent to AI: $input");
-
-      // Send the input to the AI service
-      final response = await openAIService.AIChatBot(input, context: context);
-
-      // Add the AI's response to the chat
-      setState(() {
-        _messages.add({'sender': 'ai', 'text': response});
-      });
-
-      // Scroll to the bottom to show the latest message
-      _scrollToBottom();
-    } catch (e) {
-      // Handle errors (e.g., show a snackbar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to continue AI chat: $e'),
-          backgroundColor: Colors.red,
-        ),
+      if (!mounted) return;
+      final response = await openAIService.giftFinderBot(
+        input,
+        context: context,
       );
+      if (!mounted) return;
+      setState(() {
+        _messages.add({'sender': 'ai', 'text': response['message']});
+        if (response['showAddToCart'] == true) {
+          _showAddToCartButton = true;
+        }
+        _isProcessing = false;
+      });
+      _scrollToBottom();
+      _requestInputFocus();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        _requestInputFocus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to continue AI chat: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _FirstAiChat() async {
+    final openAIService = Provider.of<OpenAIService>(context, listen: false);
     try {
-      // Map responses to their corresponding questions
-      final Map<String, String> responseMap = {
-        "Name": _responses[0],
-        "Occasion": _responses[1],
-        "Age": _responses[2],
-        "Gender": _responses[3],
-        "Interests": _responses[4],
-        "Budget": _responses[5],
-      };
-
-      // Construct a structured input for the AI
-      final input = """ 
-      """;
-
-      // Send the input to the AI service
-      final response = await openAIService.AIChatBot(
+      final input = _responses.join(", ");
+      if (!mounted) return;
+      final response = await openAIService.giftFinderBot(
         input,
-        name: _responses[0],
-        occasion: _responses[1],
-        age: (_responses[2]),
-        gender: _responses[3],
-        interests: _responses[4],
-        budget: (_responses[5]),
+        name: _responses.isNotEmpty ? _responses[0] : "",
+        budget: _responses.length > 1 ? _responses[1] : "",
         context: context,
       );
-
-      // Add the AI's response to the chat
+      if (!mounted) return;
       setState(() {
-        _messages.add({'sender': 'ai', 'text': response});
+        _messages.add({'sender': 'ai', 'text': response['message']});
+        if (response['showAddToCart'] == true) {
+          _showAddToCartButton = true;
+        }
+        _isProcessing = false;
       });
-
-      // Scroll to the bottom to show the latest message
       _scrollToBottom();
+      _requestInputFocus();
     } catch (e) {
-      // Handle errors (e.g., show a snackbar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to get the first AI response: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        _requestInputFocus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get the first AI response: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom({bool isInitialFocus = false}) {
+    if (!_scrollController.hasClients || !mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      if (!_scrollController.hasClients || !mounted) return;
+      final position = _scrollController.position;
+      final maxScroll = position.maxScrollExtent;
+      if (position.viewportDimension > 0 &&
+          (maxScroll > 0.0 || isInitialFocus)) {
+        _scrollController.animateTo(
+          maxScroll,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
 
   void onTap() async {
-    // Add the product to the cart
-
-    // product['stored_chat'] =
-    //     openAIService.Amazon_Search_Data.map(
-    //       (data) => Map<String, String>.from(data),
-    //     ).toList();
-
     try {
-      final response = await supabase.from('cart_items').insert({
-        // 'product_id': product['id'],
-        // 'title': product['title'],
-        // 'price': product['price'],
-        // 'stored_chat': product['stored_chat'], // JSONB field
-        "title": "poopie",
-      });
-
-      if (response.error != null) {
-        throw response.error!;
-      }
-
-      print('Data added to Supabase successfully: $response');
+      print('Simulating adding data to Supabase');
     } catch (e) {
       print('Failed to add data to Supabase: $e');
     }
-
-    // Print the entire product data for debugging
-    print('Updated Product Data:');
-    // print(product);
-
-    // Show a success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Product added successfully!'),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product added successfully!'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
     final isMobile = screenWidth < 800;
-    return KeyboardVisibilityBuilder(
-      builder: (context, isKeyboardVisible) {
-        return BaseLayout(
-          child: Stack(
-            children: [
-              // Background Image
-              SizedBox(
-                width: screenWidth,
-                height: screenHeight,
-                child: Image.asset(
-                  isMobile
-                      ? 'assets/images/ChatBackground.png'
-                      : 'assets/images/ChatBackgroundLandscape.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                ),
+    final viewInsetsBottom = mediaQuery.viewInsets.bottom;
+    final isKeyboardVisible = viewInsetsBottom > 0;
+    final safeAreaTop = mediaQuery.padding.top;
+    const double textFieldPaddingAboveKeyboard = 10.0;
+    const double textFieldPaddingFromScreenBottom = 20.0;
+    final double inputAreaHeight = isMobile ? 75.0 : 85.0;
+    final double textFieldEffectiveBottomPadding =
+        isKeyboardVisible
+            ? textFieldPaddingAboveKeyboard
+            : textFieldPaddingFromScreenBottom;
+    final double chatMessagesTop =
+        isKeyboardVisible ? (safeAreaTop + 10.0) : screenHeight * 0.35;
+    final double chatMessagesBottom =
+        textFieldEffectiveBottomPadding + inputAreaHeight;
+
+    final openAIService = Provider.of<OpenAIService>(context, listen: false);
+
+    return BaseLayout(
+      child: Stack(
+        children: [
+          SizedBox(
+            width: screenWidth,
+            height: screenHeight,
+            child: Image.asset(
+              isMobile
+                  ? 'assets/images/ChatBackground.png'
+                  : 'assets/images/ChatBackgroundLandscape.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          ),
+          if (!isKeyboardVisible)
+            AnimatedBuilder(
+              animation: _bobbingAnimation,
+              builder: (context, child) {
+                return Positioned(
+                  top: screenHeight * 0.02 + _bobbingAnimation.value,
+                  left: screenWidth / 2 - (screenHeight * 0.2),
+                  child: child!,
+                );
+              },
+              child: Image.asset(
+                'assets/images/Main_Present.png',
+                width: screenHeight * 0.4,
+                height: screenHeight * 0.4,
+                fit: BoxFit.contain,
               ),
-
-              // Bobbing Animation for Main_Present Image
-              if (!isKeyboardVisible)
-                AnimatedBuilder(
-                  animation: _bobbingAnimation,
-                  builder: (context, child) {
-                    return Positioned(
-                      top: screenHeight * 0.02 + _bobbingAnimation.value,
-                      left: screenWidth / 2 - (screenHeight * 0.2),
-                      child: child!,
-                    );
-                  },
-                  child: Image.asset(
-                    'assets/images/Main_Present.png',
-                    width: screenHeight * 0.4,
-                    height: screenHeight * 0.4,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-
-              // Chat Messages
-              Positioned(
-                top:
-                    isKeyboardVisible
-                        ? 20
-                        : screenHeight *
-                            0.35, // Move chat up when keyboard visible
-                left: isMobile ? 20 : screenHeight * 0.42,
-                right: isMobile ? 20 : screenHeight * 0.42,
-                bottom:
-                    isMobile
-                        ? 85 + MediaQuery.of(context).viewInsets.bottom
-                        : 120 + MediaQuery.of(context).viewInsets.bottom,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final message = _messages[index];
-                          final isUser = message['sender'] == 'user';
-                          final isDisclaimer =
-                              message['sender'] == 'disclaimer';
-
-                          return Align(
-                            alignment:
+            ),
+          Positioned(
+            top: chatMessagesTop,
+            left: isMobile ? 20 : screenWidth * 0.25,
+            right: isMobile ? 20 : screenWidth * 0.25,
+            bottom: chatMessagesBottom,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final isUser = message['sender'] == 'user';
+                      final isDisclaimer = message['sender'] == 'disclaimer';
+                      return Align(
+                        alignment:
+                            isUser
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 5,
+                            horizontal: 8,
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          constraints: BoxConstraints(
+                            maxWidth: screenWidth * (isMobile ? 0.75 : 0.6),
+                          ),
+                          decoration: BoxDecoration(
+                            color:
                                 isUser
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 5),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color:
-                                    isUser
-                                        ? Pallete.secondaryCol
-                                        : isDisclaimer
-                                        ? Colors.red
-                                        : Pallete.MainTextCol,
-
-                                borderRadius: BorderRadius.circular(10),
+                                    ? Pallete.secondaryCol
+                                    : isDisclaimer
+                                    ? Colors.red.withOpacity(0.8)
+                                    : Pallete.MainTextCol,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                                offset: const Offset(0, 1),
                               ),
-                              child: Text(
-                                message['text']!,
-                                style: TextStyle(
-                                  color: isUser ? Colors.white : Colors.black,
-                                  fontSize: 14,
-                                ),
-                              ),
+                            ],
+                          ),
+                          child: Text(
+                            message['text']!,
+                            style: TextStyle(
+                              color:
+                                  isUser || isDisclaimer
+                                      ? Colors.white
+                                      : Colors.black,
+                              fontSize: 15,
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Text Input Field
-              Positioned(
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                    20, // Move input up when keyboard visible
-                left: isMobile ? 20 : screenWidth * 0.2,
-                right: isMobile ? 20 : screenWidth * 0.2,
-                child: TextField(
-                  controller: _textController,
-                  focusNode: _focusNode,
-                  style: const TextStyle(color: Pallete.blackColor),
-                  minLines: isMobile ? 1 : 3,
-                  maxLines: isMobile ? 2 : 3,
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your message...',
-                    hintStyle: const TextStyle(color: Colors.deepPurple),
-                    border: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Pallete.Purps),
-                    ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Pallete.Purps),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Pallete.Purps),
-                    ),
-                    filled: true,
-                    fillColor: Pallete.MainTextCol,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  onSubmitted: (value) {
-                    if (value.trim().isNotEmpty) {
-                      handleUserResponse(value);
-                      _textController.clear();
-                      _scrollToBottom();
-                      _focusNode.requestFocus();
-                    }
-                  },
                 ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: textFieldEffectiveBottomPadding,
+            left: isMobile ? 20 : screenWidth * 0.2,
+            right: isMobile ? 20 : screenWidth * 0.2,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(25.0),
+              child: TextField(
+                controller: _textController,
+                focusNode: _focusNode,
+                enabled: !_isProcessing,
+                style: TextStyle(
+                  color: _isProcessing ? Colors.grey : Pallete.blackColor,
+                  fontSize: 16,
+                ),
+                minLines: isMobile ? 1 : 2,
+                maxLines: 3,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.send,
+                decoration: InputDecoration(
+                  hintText: _isProcessing ? '' : 'Enter your message...',
+                  hintStyle: TextStyle(
+                    color: Colors.deepPurple.withOpacity(0.7),
+                  ),
+                  filled: true,
+                  fillColor: Pallete.MainTextCol.withOpacity(0.95),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25.0),
+                    borderSide: BorderSide(
+                      color: Pallete.Purps.withOpacity(0.5),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25.0),
+                    borderSide: const BorderSide(
+                      color: Pallete.Purps,
+                      width: 2,
+                    ),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.send, color: Pallete.Purps),
+                    onPressed:
+                        _isProcessing
+                            ? null
+                            : () {
+                              handleUserResponse(_textController.text);
+                            },
+                  ),
+                ),
+                onSubmitted:
+                    _isProcessing
+                        ? null
+                        : (value) {
+                          handleUserResponse(value);
+                        },
+                onTapOutside: (event) {
+                  FocusScope.of(context).unfocus();
+                },
               ),
-
-              // Add to Cart Button (unchanged)
-              if (_showAddToCartButton)
-                Positioned(
-                  top: 20,
-                  left: isMobile ? 20 : screenWidth * 0.4,
-                  right: isMobile ? 20 : screenWidth * 0.4,
+            ),
+          ),
+          if (_showAddToCartButton)
+            Positioned(
+              top: isKeyboardVisible ? (safeAreaTop + 5.0) : 20,
+              left: isMobile ? 20 : 100,
+              right: isMobile ? 20 : 100,
+              child: Center(
+                child: SizedBox(
+                  width: isMobile ? null : screenWidth * 0.4,
                   child: ElevatedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
+                      final summary = await openAIService.summarizeGiftPersona(
+                        context,
+                      );
                       onTap();
                       final budgetProvider = Provider.of<BudgetProvider>(
                         context,
@@ -492,42 +530,32 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                       budgetProvider.setUserGender(genderResponse);
                       budgetProvider.setUserInterests(interestResponse);
                       budgetProvider.setProductDetails('Surprise Gift');
-                      Navigator.of(context).pushNamed('/cart_page');
+                      budgetProvider.setGiftSummary(summary);
+                      context.push('/cart_page');
                     },
                     icon: const Icon(Icons.shopping_cart),
-                    label: const Text('Add to Cart'),
+                    label: const Text('Gift Summary'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Pallete.secondaryCol,
                       foregroundColor: Colors.white,
-                      textStyle: const TextStyle(fontSize: 16),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
-              if (_showNavigateCartBtn)
-                Positioned(
-                  top: 600,
-                  left: isMobile ? 20 : screenWidth * 0.4,
-                  right: isMobile ? 20 : screenWidth * 0.4,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      onTap();
-                      Navigator.of(context).pushNamed('/cart_page');
-                    },
-                    icon: const Icon(Icons.shopping_cart),
-                    label: const Text('Navigate to Cart for testing'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Pallete.secondaryCol,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(fontSize: 16),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
+import 'package:go_router/go_router.dart';
 
 class BaseLayout extends StatelessWidget {
   final Widget child;
@@ -40,7 +41,7 @@ class BaseLayout extends StatelessWidget {
                     child: const Text('No'),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(true), // Confirm
+                    onPressed: () => context.push('/home'), // Confirm
                     child: const Text('Yes'),
                   ),
                 ],
@@ -74,10 +75,7 @@ class BaseLayout extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.home, color: iconColor ?? Pallete.MainTextCol),
           onPressed:
-              () => _handleNavigation(
-                context,
-                () => Navigator.of(context).pushNamed('/home'),
-              ),
+              () => _handleNavigation(context, () => context.push('/home')),
         ),
         actions: [
           Builder(
@@ -108,9 +106,7 @@ class BaseLayout extends StatelessWidget {
               onTap:
                   () => _handleNavigation(
                     context,
-                    () => Navigator.of(
-                      context,
-                    ).pushNamed('/home', arguments: {'scrollTo': 'about'}),
+                    () => context.push('/home?scrollTo=about'),
                   ),
             ),
             ListTile(
@@ -119,9 +115,7 @@ class BaseLayout extends StatelessWidget {
               onTap:
                   () => _handleNavigation(
                     context,
-                    () => Navigator.of(
-                      context,
-                    ).pushNamed('/home', arguments: {'scrollTo': 'faq'}),
+                    () => context.push('/home?scrollTo=faq'),
                   ),
             ),
             ListTile(
@@ -130,7 +124,7 @@ class BaseLayout extends StatelessWidget {
               onTap:
                   () => _handleNavigation(
                     context,
-                    () => Navigator.of(context).pushNamed('/contact'),
+                    () => context.push('/contact'),
                   ),
             ),
           ],

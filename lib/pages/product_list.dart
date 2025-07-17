@@ -2,11 +2,12 @@ import 'package:SandBox_Gifts_Backup/footer.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:flutter/material.dart';
-import 'package:SandBox_Gifts_Backup/global_variables.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  final String? scrollTo;
+  const ProductList({super.key, this.scrollTo});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -29,39 +30,39 @@ class _ProductListState extends State<ProductList>
   // FAQ data: list of questions and answers
   final List<Map<String, String>> faqItems = [
     {
-      'question': 'What is SandBox Gifts?',
+      'question': 'How does it work?',
       'answer':
-          'SandBox Gifts is your go-to platform for discovering unique and exciting gift ideas. We help you find the perfect gift for any occasion, with a curated selection of products and experiences.',
+          "We will do all the heavy lifting while you enjoy the fun! Our guide (powered with smart AI) will chat with you to understand how much you want to spend and your interests. Then we’ll find the perfect surprise gift tailored just for you. Once we have found your match, you can purchase it seamlessly at the end, we’ll keep you updated and maybe even give you some hints along the way.",
     },
     {
-      'question': 'How do I download the SandBox Gifts app?',
+      'question': 'What kind of gifts can I receive?',
       'answer':
-          'You can download the SandBox Gifts app from the App Store (iOS) or Google Play Store (Android). Simply search for "SandBox Gifts" and follow the installation instructions.',
+          "We have access to thousands of different items, from Tech gadgets, to beauty essentials, accessories and more. So whether you love board games, or beauty items, we will find and prioritise high value items to try to provide something you’ll enjoy.",
     },
     {
-      'question': 'What is included in a SandBox Gifts subscription?',
+      'question': 'How much does it cost?',
       'answer':
-          'A SandBox Gifts subscription includes access to premium gift recommendations, exclusive discounts, and priority customer support. Check our subscription page for more details.',
+          "The price is up to you! We allow for purchases within the range of £15 to £50, and you can select the amount that works for you.",
     },
     {
-      'question': 'How much does SandBox Gifts cost?',
+      'question': 'How long does it take to deliver?',
       'answer':
-          'Pricing varies depending on the subscription plan. Visit our pricing page for the most up-to-date information.',
+          "Delivery depends on the product provided, as the supplier of the item determines the delivery times. However we aim to get the product to you in at least 7 working days. Although this could be shorter or slightly longer. Any queries contact us at vitreongen@gmail.com",
     },
     {
-      'question': 'Does my SandBox Gifts subscription automatically renew?',
+      'question': 'Can I return or exchange my gift?',
       'answer':
-          'Yes, subscriptions automatically renew at the end of each billing cycle. You can manage your subscription settings in your account.',
+          'Because each gift is uniquely selected and shipped just for you, we don’t offer returns or exchanges with purchases. But we are here to help, if you have any issues please reach us via the contact page. ',
     },
     {
-      'question': 'How do I cancel my SandBox Gifts subscription?',
+      'question': 'Can I choose a gift for someone else?',
       'answer':
-          'To cancel your subscription, go to your account settings, select "Subscription," and follow the instructions to cancel. You can also contact support for assistance.',
+          'Of course! You can select the send as a gift option at the start of the conversation with our guide. This lets you use our service to help you find the surprise for a friend or loved one. PLEASE NOTE: This feature is currently under fixing and may still be unavailable at the time of reading this message',
     },
     {
-      'question': 'How can I support my team’s gift-giving at work?',
+      'question': 'Is it safe to use?',
       'answer':
-          'SandBox Gifts offers corporate gifting solutions to help your team celebrate special occasions. Contact our support team to learn more about our group plans.',
+          'Safety and privacy is a primary concern. We use trusted third-parties to protect your payment information and comply with regulations. You can contact us at any time to view, manage, and remove any of your information.',
     },
   ];
 
@@ -91,29 +92,27 @@ class _ProductListState extends State<ProductList>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Check for navigation arguments
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
-    if (args != null) {
-      final scrollTo = args['scrollTo'];
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (scrollTo == 'about') {
-          final aboutContext = _aboutKey.currentContext;
-          if (aboutContext != null) {
-            final renderBox = aboutContext.findRenderObject() as RenderBox;
-            final offset = renderBox.localToGlobal(Offset.zero).dy;
-            _scrollToSection(offset);
-          }
-        } else if (scrollTo == 'faq') {
-          final faqContext = _faqKey.currentContext;
-          if (faqContext != null) {
-            final renderBox = faqContext.findRenderObject() as RenderBox;
-            final offset = renderBox.localToGlobal(Offset.zero).dy;
-            _scrollToSection(offset);
-          }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.scrollTo == 'about') {
+        final aboutContext = _aboutKey.currentContext;
+        if (aboutContext != null) {
+          Scrollable.ensureVisible(
+            aboutContext,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
         }
-      });
-    }
+      } else if (widget.scrollTo == 'faq') {
+        final faqContext = _faqKey.currentContext;
+        if (faqContext != null) {
+          Scrollable.ensureVisible(
+            faqContext,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
   }
 
   void _scrollToSection(double offset) {
@@ -302,7 +301,8 @@ class _ProductListState extends State<ProductList>
                       children: [
                         Flexible(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            padding: const EdgeInsets.all(20),
+
                             child: Text(
                               item['question']!,
                               style: const TextStyle(
@@ -313,18 +313,21 @@ class _ProductListState extends State<ProductList>
                             ),
                           ),
                         ),
-                        Icon(
-                          isExpanded
-                              ? Icons.remove_circle_outline
-                              : Icons.add_circle_outline,
-                          color: Colors.white70,
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Icon(
+                            isExpanded
+                                ? Icons.remove_circle_outline
+                                : Icons.add_circle_outline,
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   if (isExpanded)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 16),
+                      padding: const EdgeInsets.all(20),
                       child: Text(
                         item['answer']!,
                         style: const TextStyle(
@@ -418,10 +421,7 @@ class _ProductListState extends State<ProductList>
 
                                   try {
                                     if (mounted) {
-                                      Navigator.of(context).pushNamed(
-                                        '/startMysteryPage',
-                                        arguments: {'product': products[0]},
-                                      );
+                                      context.push('/startMysteryPage');
                                     }
                                   } catch (e) {
                                     // Handle errors (e.g., show a snackbar)
@@ -507,16 +507,7 @@ class _ProductListState extends State<ProductList>
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'At SandBox Gifts, we believe in the joy of giving. Our mission is to help you find the perfect gift for every occasion, '
-                          'whether it’s a birthday, anniversary, or just a way to show someone you care. With a curated selection of unique products '
-                          'and experiences, we aim to make gift-giving effortless and memorable.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, color: Colors.white70),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Our team is passionate about discovering the best gifts from around the world and bringing them to your fingertips. '
-                          'Thank you for choosing SandBox Gifts as your trusted gifting partner.',
+                          "A gift is more than a product. It’s the anticipation. The curiosity. And the moment of surprise.  But why wait and rely on someone else to give you that feeling? At The Gift Vaults, we flipped the script, here, you gift yourself. Hidden in our vaults are endless products waiting to be discovered, and with the help of our guide we will match you with the perfect surprise tailored just for you. So why not give it a try and in just a few questions unlock all of the joys while you wait for your mystery!.",
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 18, color: Colors.white70),
                         ),
@@ -527,7 +518,6 @@ class _ProductListState extends State<ProductList>
 
                 const SizedBox(height: 80),
 
-                // Trending List
                 _buildTrendingList(),
                 const SizedBox(height: 20),
 

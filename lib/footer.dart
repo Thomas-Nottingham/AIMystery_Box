@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
+import 'package:go_router/go_router.dart';
 
 class MyFooter extends StatelessWidget {
   final Color? footerCol;
@@ -57,100 +58,28 @@ class MyFooter extends StatelessWidget {
                       children: [
                         FooterLink(
                           text: 'Terms and conditions',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/terms_and_conditions',
-                              ),
+                          onTap: () => context.push('/terms_and_conditions'),
                         ),
+
                         FooterLink(
                           text: 'Privacy Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/privacy_policy'),
                         ),
                         FooterLink(
                           text: 'Cookies Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/cookies_policy',
-                              ),
+                          onTap: () => context.push('/cookies_policy'),
                         ),
                         FooterLink(
                           text: 'Contact Us',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/contact'),
                         ),
                         FooterLink(
                           text: 'Returns & Refund Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'AI Disclosure',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/refund_policy'),
                         ),
                       ],
                     ),
                     SizedBox(height: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FooterLink(
-                          text: 'About Us',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Order Tracking',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Cookie Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Affiliate Disclosure',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Shipping Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                      ],
-                    ),
                   ],
                 )
                 : Row(
@@ -160,97 +89,23 @@ class MyFooter extends StatelessWidget {
                       children: [
                         FooterLink(
                           text: 'Terms and conditions',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/terms_and_conditions',
-                              ),
+                          onTap: () => context.push('/terms_and_conditions'),
                         ),
                         FooterLink(
                           text: 'Privacy Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/privacy_policy'),
                         ),
                         FooterLink(
                           text: 'Cookies Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/cookies_policy',
-                              ),
+                          onTap: () => context.push('/cookies_policy'),
                         ),
                         FooterLink(
                           text: 'Contact Us',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/contact'),
                         ),
                         FooterLink(
                           text: 'Returns & Refund Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'AI Disclosure',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 250),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        FooterLink(
-                          text: 'About Us',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Order Tracking',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Cookie Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Affiliate Disclosure',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
-                        ),
-                        FooterLink(
-                          text: 'Shipping Policy',
-                          onTap:
-                              () => Navigator.pushNamed(
-                                context,
-                                '/privacy_policy',
-                              ),
+                          onTap: () => context.push('/refund_policy'),
                         ),
                       ],
                     ),
@@ -291,7 +146,6 @@ class FooterLink extends StatelessWidget {
             style: TextStyle(
               color: Textcol ?? Pallete.footerCol,
               fontSize: isMobile ? 12 : 20,
-              decoration: TextDecoration.underline,
             ),
           ),
         ),
