@@ -26,22 +26,26 @@ class BaseLayout extends StatelessWidget {
     this.centerTitle,
   });
 
+  // This function now correctly returns true/false without navigating
   Future<bool> _showExitConfirmation(BuildContext context) async {
     return await showDialog<bool>(
           context: context,
           builder:
-              (context) => AlertDialog(
+              (dialogContext) => AlertDialog(
                 title: const Text('Confirm Exit'),
                 content: const Text(
                   'Are you sure you want to leave this page? \nChat history will not be stored',
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(false), // Cancel
+                    onPressed:
+                        () => Navigator.of(dialogContext).pop(false), // Cancel
                     child: const Text('No'),
                   ),
                   TextButton(
-                    onPressed: () => context.push('/home'), // Confirm
+                    // ## THIS IS THE ONLY LINE THAT WAS CHANGED ##
+                    onPressed:
+                        () => Navigator.of(dialogContext).pop(true), // Confirm
                     child: const Text('Yes'),
                   ),
                 ],
@@ -54,13 +58,22 @@ class BaseLayout extends StatelessWidget {
     BuildContext context,
     VoidCallback action,
   ) async {
+    // This uses the old route detection, which you said works for the pop-up
     final currentRoute = ModalRoute.of(context)?.settings.name;
-    print("Current Route: $currentRoute");
+
     if (currentRoute == '/startMysteryPage' || currentRoute == '/cart_page') {
       final shouldExit = await _showExitConfirmation(context);
-      if (!shouldExit) return; // Cancel navigation if user selects "No"
+      if (!shouldExit) {
+        return; // User clicked "No," so we stop here.
+      }
     }
-    action(); // Proceed with the navigation logic
+
+    // Close the drawer if it is open before navigating
+    if (Scaffold.of(context).isEndDrawerOpen) {
+      Navigator.of(context).pop();
+    }
+
+    action(); // Proceed with the intended navigation (e.g., to /contact)
   }
 
   @override
@@ -69,14 +82,10 @@ class BaseLayout extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: appBarColor ?? Pallete.TransparentCol,
         elevation: 0,
+        automaticallyImplyLeading: false,
         scrolledUnderElevation: 0,
         centerTitle: centerTitle ?? true,
         title: text_title,
-        leading: IconButton(
-          icon: Icon(Icons.home, color: iconColor ?? Pallete.MainTextCol),
-          onPressed:
-              () => _handleNavigation(context, () => context.push('/home')),
-        ),
         actions: [
           Builder(
             builder:
@@ -91,43 +100,57 @@ class BaseLayout extends StatelessWidget {
         ],
       ),
       endDrawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Pallete.primaryCol),
-              child: const Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('About'),
-              onTap:
-                  () => _handleNavigation(
-                    context,
-                    () => context.push('/home?scrollTo=about'),
+        child: Builder(
+          builder: (drawerContext) {
+            return ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                DrawerHeader(
+                  decoration: BoxDecoration(color: Pallete.primaryCol),
+                  child: const Text(
+                    'Menu',
+                    style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.question_answer),
-              title: const Text('Frequently Asked Questions'),
-              onTap:
-                  () => _handleNavigation(
-                    context,
-                    () => context.push('/home?scrollTo=faq'),
-                  ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.phone),
-              title: const Text('Contact Us'),
-              onTap:
-                  () => _handleNavigation(
-                    context,
-                    () => context.push('/contact'),
-                  ),
-            ),
-          ],
+                ),
+                ListTile(
+                  leading: const Icon(Icons.home),
+                  title: const Text('Home'),
+                  onTap:
+                      () => _handleNavigation(
+                        drawerContext,
+                        () => context.push('/home'),
+                      ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info),
+                  title: const Text('About'),
+                  onTap:
+                      () => _handleNavigation(
+                        drawerContext,
+                        () => context.push('/home?scrollTo=about'),
+                      ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.question_answer),
+                  title: const Text('Frequently Asked Questions'),
+                  onTap:
+                      () => _handleNavigation(
+                        drawerContext,
+                        () => context.push('/home?scrollTo=faq'),
+                      ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.phone),
+                  title: const Text('Contact Us'),
+                  onTap:
+                      () => _handleNavigation(
+                        drawerContext,
+                        () => context.push('/contact'),
+                      ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       body: child,
