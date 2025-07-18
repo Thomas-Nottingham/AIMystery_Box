@@ -13,6 +13,7 @@ class OpenAIService {
   static const int maxInitialQuestions = 5;
   static const int maxSecondaryMessages = 4;
 
+  // --- All your existing prompts remain the same ---
   static const List<String> questionerPrompts = [
     """
 You are a friendly surprise gift-finding assistant. Think about their daily routine, from their morning coffee to how they unwind at night. What's a specific object, ritual, or part of their day they truly cherish, or a small, recurring frustration they've mentioned? We're looking for something that could either elevate a moment they love or solve a minor annoyance. Respond ONLY in JSON format with a 'message' key containing the question.
@@ -45,17 +46,17 @@ You are a highly discerning expert gift consultant with exceptionally high stand
 Analyze the user's answers based on the following strict rubric. Be strict, as the recipient must be happy with the gift.
 
 1. **Specificity over Generality:**
-   Vague, one-word answers like "gym" or "movies" are INSUFFICIENT.
-   Specific, detailed answers like "is training for a marathon and complains about chafing" or "loves watching classic horror films from the 1970s" are SUFFICIENT.
+  Vague, one-word answers like "gym" or "movies" are INSUFFICIENT.
+  Specific, detailed answers like "is training for a marathon and complains about chafing" or "loves watching classic horror films from the 1970s" are SUFFICIENT.
 
 2. **Identify Actionable Insights:**
-   Is there a clear problem to solve (e.g., "their phone battery is always dying")?
-   Is there a specific passion to support (e.g., "learning to paint with watercolors")?
-   Is there a comfort to enhance (e.g., "loves drinking herbal tea before bed")?
-   A simple interest is not enough; there must be an angle for a gift.
+  Is there a clear problem to solve (e.g., "their phone battery is always dying")?
+  Is there a specific passion to support (e.g., "learning to paint with watercolors")?
+  Is there a comfort to enhance (e.g., "loves drinking herbal tea before bed")?
+  A simple interest is not enough; there must be an angle for a gift.
 
 3. **Synthesize a Coherent Profile:**
-   Do the answers connect to form a clear picture of the person? A collection of random, vague facts is not enough. The data must tell a story.
+  Do the answers connect to form a clear picture of the person? A collection of random, vague facts is not enough. The data must tell a story.
 
 After your critical analysis, respond ONLY in this JSON format:
 {
@@ -75,14 +76,7 @@ Respond ONLY in this JSON format:
 }
 """;
 
-  static const String conversationSummarizerPrompt = """
-You are a text summarization assistant. A user and an AI have had a conversation.
-Your task is to condense this conversation into a simple, human-readable summary that is strictly under 450 characters.
-Format the output as a simple dialogue transcript (e.g., "User: [message] -> AI: [message] -> User: [message]").
-Exclude all system messages and JSON formatting instructions. Focus only on the direct conversation.
-Respond ONLY with the summarized text.
-""";
-
+  // --- All your other methods like giftFinderBot, evaluateGiftData etc. remain here unchanged ---
   void clearMessages() {
     messages.clear();
     questionCount = 0;
@@ -117,6 +111,7 @@ Respond ONLY with the summarized text.
             )['choices'][0]['message']['content'];
         final jsonContent = jsonDecode(content);
         messages.add({'role': 'assistant', 'content': content});
+        // This saves the raw history during the chat
         Provider.of<BudgetProvider>(
           context,
           listen: false,
@@ -155,6 +150,7 @@ Respond ONLY with the summarized text.
             )['choices'][0]['message']['content'];
         final jsonContent = jsonDecode(content);
         messages.add({'role': 'system', 'content': content});
+        // This also saves the raw history during the chat
         Provider.of<BudgetProvider>(
           context,
           listen: false,
@@ -246,7 +242,7 @@ Follow these rules:
     if (messagesLeft == 0) {
       final msg =
           addToCartAvailable
-              ? "Your gift is waiting just click on the button to proceed - if you would like to keep talking start a new conversation."
+              ? "Your gift is waiting! Just click the button to proceed. If you'd like to keep talking, please start a new conversation."
               : "Sorry, we couldn't find you a gift this time.";
       return response(msg, addToCartAvailable);
     }
@@ -286,55 +282,47 @@ Follow these rules:
     return "A special surprise tailored just for them.";
   }
 
-  Future<String> getConversationSummaryForStripe(BuildContext context) async {
-    final tempMessages = List<Map<String, String>>.from(messages);
-    tempMessages.insert(0, {
-      'role': 'system',
-      'content': conversationSummarizerPrompt,
-    });
-
+  // --- STEP 1: LOCAL CLEANING METHOD ---
+  Future<String> createCleanTranscript(String rawJsonHistory) async {
     try {
-      final res = await http.post(
-        Uri.parse('/api/openai'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "model": "gpt-4o",
-          "messages": tempMessages,
-          "max_tokens": 100,
-          "temperature": 0.2,
-        }),
-      );
-      if (res.statusCode == 200) {
-        return jsonDecode(
-          utf8.decode(res.bodyBytes),
-        )['choices'][0]['message']['content'];
+      final List<dynamic> messages = jsonDecode(rawJsonHistory);
+      final buffer = StringBuffer();
+
+      for (var message in messages) {
+        final role = message['role'];
+        final content = message['content'];
+
+        if (role == 'user') {
+          buffer.writeln('User: $content');
+        } else if (role == 'assistant') {
+          try {
+            final assistantMessage = jsonDecode(content)['message'];
+            buffer.writeln('Assistant: $assistantMessage');
+          } catch (e) {
+            print('Could not parse assistant message: $content');
+          }
+        }
       }
+      return buffer.toString();
     } catch (e) {
-      print('Error summarizing conversation: $e');
+      print('Error creating clean transcript: $e');
+      return "Could not generate a clean transcript due to a formatting error.";
     }
-    return "Could not generate conversation summary.";
   }
 
-  static const String transcriptCleanerPrompt = """
-You will be given a JSON chat log between a user and an AI assistant. Your task is to extract and summarize the dialogue between them in a simple back-and-forth format, omitting all metadata, roles, and repeated information.
-Output Rules:
-- dont show / [] {} or "" in the output
-- remove the paragraph at the start which starts with "You are speaking to"
-- Show only the assistant and user messages.
-- Keep the sequence and flow of the conversation.
-- Remove any duplicated input or answers from the user's side.
-- Do not include system messages or instructions.
-- Format like a chat transcript using this structure:
-Assistant: [Message]
-User: [Message]
+  // --- NEW PROMPT FOR THE SUMMARIZER ---
+  static const String _transcriptSummarizerPrompt = """
+You will be given a chat transcript. The user's messages are very repetitive as they repeat previous context in every message.
+Your task is to rewrite the conversation to be more natural and concise by removing the duplicated information from the user's side.
+The assistant's messages should remain unchanged.
+Maintain the exact back-and-forth 'User:' and 'Assistant:' format.
 """;
 
-  // --- NEW METHOD TO CLEAN THE HISTORY ---
-  Future<String> createCleanTranscript(String rawJsonHistory) async {
-    // We send the cleaning prompt and the messy history to the AI
-    final messagesForCleaning = [
-      {'role': 'system', 'content': transcriptCleanerPrompt},
-      {'role': 'user', 'content': rawJsonHistory},
+  // --- STEP 2: NEW AI SUMMARIZATION METHOD ---
+  Future<String> summarizeCleanTranscript(String cleanTranscript) async {
+    final messagesForSummarizing = [
+      {'role': 'system', 'content': _transcriptSummarizerPrompt},
+      {'role': 'user', 'content': cleanTranscript},
     ];
 
     try {
@@ -342,9 +330,10 @@ User: [Message]
         Uri.parse('/api/openai'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "model": "gpt-4o",
-          "messages": messagesForCleaning,
-          "max_tokens": 300, // Allow for a decent length summary
+          "model":
+              "gpt-4o", // You could use a faster model like gpt-3.5-turbo here too
+          "messages": messagesForSummarizing,
+          "max_tokens": 400, // Allow enough space for the full conversation
           "temperature": 0.1,
         }),
       );
@@ -353,12 +342,15 @@ User: [Message]
         return jsonDecode(
           utf8.decode(res.bodyBytes),
         )['choices'][0]['message']['content'];
+      } else {
+        // If the AI call fails, return the clean but unsummarized transcript
+        print('AI summarization failed: ${res.body}');
+        return cleanTranscript;
       }
     } catch (e) {
-      print('Error creating clean transcript: $e');
+      print('Error summarizing clean transcript: $e');
+      // If an error occurs, return the clean but unsummarized transcript
+      return cleanTranscript;
     }
-    return "Could not generate a clean transcript.";
   }
-
-  // --- All your other existing methods remain here unchanged ---
 }

@@ -32,10 +32,10 @@ class PrivacyPolicyPage extends StatelessWidget {
                 SectionTitle('Privacy Policy'),
                 SizedBox(height: 10),
                 Paragraph(
-                  "This Privacy Notice for Vitreon Limited ('we', 'us', or 'our'), describes how and why we might access, collect, store, use, and/or share ('process') your personal information when you use our services ('Services'), including when you:\n\n"
+                  "This Privacy Notice for Vitreon Limited, describes how and why we might access, collect, store, use, and/or share ('process') your personal information when you use our services ('Services'), including when you:\n\n"
                   "• Visit our website at thegiftvaults.com, or any website of ours that links to this Privacy Notice\n"
                   "• Engage with us in other related ways, including any sales, marketing, or events\n\n"
-                  "Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at vitreongen@gmail.com.",
+                  "Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at thegiftvaults@gmail.com",
                 ),
                 SizedBox(height: 30),
                 SectionTitle('SUMMARY OF KEY POINTS'),
@@ -78,7 +78,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 ),
                 BoldQuestion('How do you exercise your rights?'),
                 Paragraph(
-                  "The easiest way to exercise your rights is by contacting us at vitreongen@gmail.com. We will consider and act upon any request in accordance with applicable data protection laws.",
+                  "The easiest way to exercise your rights is by contacting us at thegiftvaults@gmail.com. We will consider and act upon any request in accordance with applicable data protection laws.",
                 ),
                 SizedBox(height: 30),
                 SectionTitle('1. WHAT INFORMATION DO WE COLLECT?'),
@@ -182,7 +182,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 ),
                 Paragraph(
                   "• AI Service Providers\n"
-                  "   ○ Groq\n"
+                  "   ○ OpenAI\n"
                   "• Cloud Computing Services\n"
                   "   ○ Supabase\n"
                   "• Invoice and Billing\n"
@@ -233,7 +233,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 ),
                 BoldQuestion('Use of AI Technologies'),
                 Paragraph(
-                  "We provide the AI Products through third-party service providers ('AI Service Providers'), including Groq. As outlined in this Privacy Notice, your input, output, and personal information will be shared with and processed by these AI Service Providers "
+                  "We provide the AI Products through third-party service providers ('AI Service Providers'), including OpenAI. As outlined in this Privacy Notice, your input, output, and personal information will be shared with and processed by these AI Service Providers "
                   "to enable your use of our AI Products for purposes outlined in 'What Legal Bases Do We Rely On To Process Your Personal Information?'. You must not use the AI Products in any way that violates the terms or policies of any AI Service Provider.",
                 ),
                 BoldQuestion('Our AI Products'),
@@ -281,7 +281,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   "We do not knowingly collect, solicit data from, or market to children under 18 years of age, nor do we knowingly sell such personal information. "
                   "By using the Services, you represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent’s use of the Services. "
                   "If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. "
-                  "If you become aware of any data we may have collected from children under age 18, please contact us at vitreongen@gmail.com.",
+                  "If you become aware of any data we may have collected from children under age 18, please contact us at thegiftvaults@gmail.com.",
                 ),
                 SizedBox(height: 30),
                 SectionTitle('10. WHAT ARE YOUR PRIVACY RIGHTS?'),
@@ -325,7 +325,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 SizedBox(height: 30),
                 SectionTitle('13. HOW CAN YOU CONTACT US ABOUT THIS NOTICE?'),
                 Paragraph(
-                  "If you have questions or comments about this notice, you may email us at vitreongen@gmail.com or contact us by post at:\n\n"
+                  "If you have questions or comments about this notice, you may email us at thegiftvaults@gmail.com or contact us by post at:\n\n"
                   "Vitreon Limited\n"
                   "Office 8081\n"
                   "321-323 High Road\n"

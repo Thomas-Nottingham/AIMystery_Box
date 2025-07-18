@@ -34,9 +34,9 @@ class TermsAndConditionsPage extends StatelessWidget {
                 SectionTitle('AGREEMENT TO OUR LEGAL TERMS'),
                 SizedBox(height: 10),
                 Paragraph(
-                  "We are Vitreon Limited (\"Company,\" \"we,\" \"us,\" \"our\").\n\n"
+                  "We are Vitreon Limited \n\n"
                   "We operate thegiftvaults.com, as well as any other related products and services that refer or link to these legal terms (the \"Legal Terms\") (collectively, the \"Services\").\n\n"
-                  "You can contact us by email at vitreongen@gmail.com or by mail to [Your Full Address Here].\n\n"
+                  "You can contact us by email at thegiftvaults@gmail.com. \n\n"
                   "These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (\"you\"), and Vitreon Limited, concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.",
                 ),
                 SizedBox(height: 20),
@@ -61,7 +61,7 @@ class TermsAndConditionsPage extends StatelessWidget {
                   "Subject to your compliance with these Legal Terms, we grant you a non-exclusive, non-transferable, revocable license to access and use the Services for personal, non-commercial, or internal business purposes only.",
                 ),
                 Paragraph(
-                  "No part of the Services, Content, or Marks may be copied, reproduced, or used for any commercial purpose without our express prior written permission. Requests may be sent to: vitreongen@gmail.com.",
+                  "No part of the Services, Content, or Marks may be copied, reproduced, or used for any commercial purpose without our express prior written permission. Requests may be sent to: thegiftvaults@gmail.com.",
                 ),
                 Paragraph(
                   "Any breach of our intellectual property rights will result in immediate termination of your right to use our Services.",
@@ -298,7 +298,7 @@ class TermsAndConditionsPage extends StatelessWidget {
                 SectionTitle('20. CONTACT US'),
                 SizedBox(height: 10),
                 Paragraph(
-                  "In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:\n\n You can contact us here: vitreongen@gmail.com",
+                  "In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:\n\nYou can contact us here: thegiftvaults@gmail.com",
                 ),
                 SizedBox(height: 60),
                 Center(child: MyFooter()),

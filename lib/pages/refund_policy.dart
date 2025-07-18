@@ -70,17 +70,7 @@ class ReturnPolicyPage extends StatelessWidget {
                 SectionTitle('RETURN PROCESS'),
                 const SizedBox(height: 10),
                 Paragraph(
-                  "To return an item, place the item securely in its original packaging, and mail your return to the following address:",
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "__________\nAttn: Returns\n__________\n__________",
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 15,
-                    height: 1.5,
-                    fontStyle: FontStyle.italic,
-                  ),
+                  "The return address depends on the supplier, and when a return is requested we will provide the relevant information",
                 ),
                 const SizedBox(height: 10),
                 Paragraph(
@@ -130,11 +120,11 @@ class ReturnPolicyPage extends StatelessWidget {
                   child: RichText(
                     text: TextSpan(
                       style: linkStyle,
-                      text: 'thegiftvaultscs@gmail.com',
+                      text: 'thegiftvaults@gmail.com',
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              _launchEmail('thegiftvaultscs@gmail.com');
+                              _launchEmail('thegiftvaults@gmail.com');
                             },
                     ),
                   ),

@@ -42,17 +42,15 @@ class _StartMysteryPageState extends State<StartMysteryPage>
   bool _showAddToCartButton = false;
   bool _questionsCompleted = false;
 
-  // --- THIS LINE IS DELETED ---
-  // final OpenAIService openAIService = OpenAIService();
-
   bool _isProcessing = true;
+  // --- NEW STATE VARIABLE TO HANDLE BUTTON LOADING ---
+  bool _isButtonProcessing = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // --- USE THE SHARED SERVICE ---
     final openAIService = Provider.of<OpenAIService>(context, listen: false);
     openAIService.clearMessages();
 
@@ -66,6 +64,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     _focusNode.addListener(_onFocusChange);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 1400));
       setState(() {
         _messages.add({
           'sender': 'ai',
@@ -341,8 +340,6 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     final double chatMessagesBottom =
         textFieldEffectiveBottomPadding + inputAreaHeight;
 
-    final openAIService = Provider.of<OpenAIService>(context, listen: false);
-
     return BaseLayout(
       child: Stack(
         children: [
@@ -515,26 +512,85 @@ class _StartMysteryPageState extends State<StartMysteryPage>
               child: Center(
                 child: SizedBox(
                   width: isMobile ? null : screenWidth * 0.4,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final summary = await openAIService.summarizeGiftPersona(
-                        context,
-                      );
-                      onTap();
-                      final budgetProvider = Provider.of<BudgetProvider>(
-                        context,
-                        listen: false,
-                      );
-                      budgetProvider.setBudget(budgetResponse);
-                      budgetProvider.setUserAge(ageResponse);
-                      budgetProvider.setUserGender(genderResponse);
-                      budgetProvider.setUserInterests(interestResponse);
-                      budgetProvider.setProductDetails('Surprise Gift');
-                      budgetProvider.setGiftSummary(summary);
-                      context.push('/cart_page');
-                    },
-                    icon: const Icon(Icons.shopping_cart),
-                    label: const Text('Gift Summary'),
+                  // --- THIS ENTIRE WIDGET IS UPDATED ---
+                  child: ElevatedButton(
+                    // Disable the button when processing, otherwise call the function
+                    onPressed:
+                        _isButtonProcessing
+                            ? null
+                            : () async {
+                              // Start processing
+                              setState(() {
+                                _isButtonProcessing = true;
+                              });
+                              try {
+                                // Get providers
+                                final budgetProvider =
+                                    Provider.of<BudgetProvider>(
+                                      context,
+                                      listen: false,
+                                    );
+                                final openAIService =
+                                    Provider.of<OpenAIService>(
+                                      context,
+                                      listen: false,
+                                    );
+
+                                // Perform 2-Step Cleaning
+                                final rawHistory =
+                                    budgetProvider.conversationHistory;
+                                final cleanButRepetitiveHistory =
+                                    await openAIService.createCleanTranscript(
+                                      rawHistory,
+                                    );
+                                final finalSummarizedHistory =
+                                    await openAIService
+                                        .summarizeCleanTranscript(
+                                          cleanButRepetitiveHistory,
+                                        );
+                                budgetProvider.setConversationHistory(
+                                  finalSummarizedHistory,
+                                );
+
+                                // Get other data
+                                final summary = await openAIService
+                                    .summarizeGiftPersona(context);
+                                onTap();
+                                budgetProvider.setBudget(budgetResponse);
+                                budgetProvider.setUserAge(ageResponse);
+                                budgetProvider.setUserGender(genderResponse);
+                                budgetProvider.setUserInterests(
+                                  interestResponse,
+                                );
+                                budgetProvider.setProductDetails(
+                                  'Surprise Gift',
+                                );
+                                budgetProvider.setGiftSummary(summary);
+
+                                // Navigate away
+                                if (mounted) {
+                                  context.push('/cart_page');
+                                }
+                              } catch (e) {
+                                print("Error during button press: $e");
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'An error occurred. Please try again.',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } finally {
+                                // Stop processing, re-enable button if still on page
+                                if (mounted) {
+                                  setState(() {
+                                    _isButtonProcessing = false;
+                                  });
+                                }
+                              }
+                            },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Pallete.secondaryCol,
                       foregroundColor: Colors.white,
@@ -550,6 +606,25 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+                    // Show a loading spinner or the icon/label
+                    child:
+                        _isButtonProcessing
+                            ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                            : const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.shopping_cart),
+                                SizedBox(width: 8),
+                                Text('Gift Summary'),
+                              ],
+                            ),
                   ),
                 ),
               ),

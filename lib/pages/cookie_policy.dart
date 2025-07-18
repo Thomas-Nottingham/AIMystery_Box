@@ -61,7 +61,7 @@ class CookiePolicyPage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 Paragraph(
-                  "This Cookie Policy explains how Vitreon Limited (\"Company,\" \"we,\" \"us,\" and \"our\") uses cookies and similar technologies to recognize you when you visit our website at https://thegiftvaults.com (\"Website\"). It explains what these technologies are and why we use them, as well as your rights to control our use of them.",
+                  "This Cookie Policy explains how Vitreon Limited uses cookies and similar technologies to recognize you when you visit our website at https://thegiftvaults.com (\"Website\"). It explains what these technologies are and why we use them, as well as your rights to control our use of them.",
                 ),
                 const SizedBox(height: 20),
                 Paragraph(
@@ -273,7 +273,7 @@ class CookiePolicyPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 Paragraph(
-                  "Vitreon Limited\n14 Iris Close\nBrentwood, Essex CM15 9QF\nUnited Kingdom\nPhone: 07780442601",
+                  "Vitreon Limited\nOffice 8081\n321-323 High Road\nChadwell Heath\nEssex RM6 6AX\nUnited Kingdom\nPhone: +44 7307 178980",
                 ),
                 const SizedBox(height: 60),
                 Center(child: MyFooter()),
