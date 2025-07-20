@@ -1,269 +1,29 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+  <script
+  type="text/javascript"
+  src="https://app.termly.io/embed.min.js"
+  data-auto-block="off"
+  data-website-uuid="9d685912-8c03-4af6-b30f-ec63efed0335"
+></script>
+  <base href="/">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Unlock a gift from the vault here">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <base href="/">
 
-  <!--============== Add jQuery (for $(document).ready) ==============-->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    integrity="sha256-/xUj+3OJ+Yp1zFRCkR1yVZK48CXpeK1Gw5DaZ/5rR0w=" crossorigin="anonymous"></script>
-
-  <script src="https://js.stripe.com/v3/"></script>
-  <script src="https://app.termly.io/resource-blocker/9d685912-8c03-4af6-b30f-ec63efed0335?autoBlock=on"></script>
-  
-  <style>
-    /*   Lock html/body to the visual viewport on iOS */
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      /* no page-scrolling */
-      position: fixed;
-      /* lock to visual viewport */
-      overscroll-behavior-y: contain;
-      /* prevent rubber-band */
-    }
-
-    /* Hide Termly preferences overlay if injected */
-    .termly-display-preferences {
-      display: none !important;
-    }
-
-    /* Splash screen (unchanged) */
-    #splash {
-      position: fixed;
-      inset: 0;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      font-family: sans-serif;
-      font-size: 1.5rem;
-    }
-
-    /* ================== MODAL STYLES ================== */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      /* iOS-friendly full height: */
-      height: -webkit-fill-available;
-      height: 100vh;
-      /* fallback for other browsers */
-
-      background: white;
-      z-index: 1000;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-
-      /* allow internal scrolling if content overflows: */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-
-      transform: translateY(100vh);
-      transition: transform 0.3s ease;
-    }
-
-    .modal.visible {
-      transform: translateY(0);
-    }
-
-    .modal header {
-      padding: 1rem;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .modal header h2 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    .modal header button {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    .modal .content {
-      padding: 1rem;
-    }
-
-    /* Example: a simple “Open Modal” button in the page: */
-    #open-modal {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 0.75rem 1.5rem;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 0.25rem;
-      cursor: pointer;
-    }
-
-    /* ==================================================== */
-  </style>
-
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="TheGiftVaults">
+  <meta name="apple-mobile-web-app-title" content="The Gift Vaults">
   <link rel="apple-touch-icon" href="favi.png">
-  <link rel="icon" type="image/png" href="favi.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favi.png"/>
 
   <title>The Gift Vaults</title>
-  <script defer src="flutter_bootstrap.js"></script>
+  <link rel="manifest" href="manifest.json">
+
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
-
 <body>
-  
-  <div id="splash">
-    Loading The Gift Vaults...
-  </div>
-
-  <div id="pre-flutter-ui" style="display: none;">
-    <div id="stripe-card-element"></div>
-  </div>
-
-  <button id="open-modal">Open Modal</button>
-
-  <!--   Your full-screen modal (initially hidden) -->
-  <div class="modal" id="my-modal" aria-hidden="true">
-    <header>
-      <h2>Enter your info</h2>
-      <button id="modal-close">&times;</button>
-    </header>
-    <div class="content">
-      <p>
-        Some content at the top of the modal—this is what you want visible even when the keyboard is up.
-      </p>
-      <input type="text" id="modal-input" placeholder="Type here…"
-        style="width: 100%; padding: 0.5rem; margin-top: 1rem; font-size: 1rem;">
-      <!-- more content below…. -->
-      <p style="margin-top: 2rem;">
-        More fields, buttons, anything you want…
-      </p>
-    </div>
-  </div>
-
-  <script defer src="stripe_elements.js"></script>
-  <script>
-    window.addEventListener('load', function () {
-      /* … your existing Flutter loader code … */
-      if (typeof _flutter === 'undefined' || typeof _flutter.loader === 'undefined') {
-        console.error('Flutter loader not available!');
-        var splash = document.getElementById('splash');
-        if (splash) splash.innerHTML = 'Error loading application resources.';
-        return;
-      }
-
-      _flutter.loader.loadEntrypoint({
-        onEntrypointLoaded: async function (engineInitializer) {
-          try {
-            const appRunner = await engineInitializer.initializeEngine({
-              // hostElement: document.getElementById('flutter-host')
-            });
-            await appRunner.runApp();
-
-            // Show pre-flutter UI after Flutter app is ready
-            var preFlutterUiElement = document.getElementById('pre-flutter-ui');
-            if (preFlutterUiElement) preFlutterUiElement.style.display = 'block';
-
-            // Remove splash screen once Flutter is ready
-            var splashElement = document.getElementById('splash');
-            if (splashElement) splashElement.remove();
-
-          } catch (e) {
-            console.error('Error running Flutter app:', e);
-            var splashElement = document.getElementById('splash');
-            if (splashElement) splashElement.textContent = 'An error occurred while loading the app.';
-          }
-        }
-      });
-    });
-
-    // ────────────────────────────────────────────────────────────────────────────
-    //   MODAL OPEN/CLOSE & SCROLL LOCK (unchanged)
-    // ────────────────────────────────────────────────────────────────────────────
-    const modal = document.getElementById('my-modal');
-    const openBtn = document.getElementById('open-modal');
-    const closeBtn = document.getElementById('modal-close');
-    const modalInput = document.getElementById('modal-input');
-
-    function disableBackgroundScroll() {
-      document.documentElement.style.touchAction = 'none';
-    }
-
-    function enableBackgroundScroll() {
-      document.documentElement.style.touchAction = '';
-    }
-
-    openBtn.addEventListener('click', () => {
-      modal.classList.add('visible');
-      modal.setAttribute('aria-hidden', 'false');
-      disableBackgroundScroll();
-
-      // Auto-focus the input after a tiny delay so that iOS has painted the modal
-      setTimeout(() => {
-        modalInput.focus();
-      }, 300);
-    });
-
-    closeBtn.addEventListener('click', () => {
-      modal.classList.remove('visible');
-      modal.setAttribute('aria-hidden', 'true');
-      enableBackgroundScroll();
-      modalInput.blur();
-    });
-
-    // When the input inside the modal gets focus, force scroll back to top
-    modalInput.addEventListener('focus', () => {
-      // 1) Reset window scroll
-      window.scrollTo(0, 0);
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
-
-      // 2) If modal itself scrolled a bit, also reset it
-      modal.scrollTop = 0;
-    });
-
-    // ────────────────────────────────────────────────────────────────────────────
-  </script>
-
-  <!-- ────────────────────────────────────────────────────────────────────────────
-       Below: the two extra snippets you asked for. 
-       1) document.ontouchmove = preventDefault()
-       2) input.onfocus = window.scrollTo(0,0)
-       ──────────────────────────────────────────────────────────────────────────── -->
-  <script type="text/javascript">
-    $(document).ready(function () {
-      // This prevents any touch‐drag on the document (no rubber‐band):
-      document.ontouchmove = function (e) {
-        e.preventDefault();
-      };
-    });
-
-    // If you want to be extremely explicit on “modalInput.onfocus”:
-    document.getElementById('modal-input').onfocus = function () {
-      window.scrollTo(0, 0);
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
-    };
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
-
 </html>

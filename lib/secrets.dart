@@ -1,2 +1,2 @@
 const String stripePublishableKey =
-    "pk_test_51RMYMeRwiRrw4YRsMBMKPHIzawX9YTBgwVrQUAtTwTAGikd0qarUjbX0K8lyWQv0dv5uBz9PBFmDwYRFkSpRz2WC00Z0otGanR";
+    "pk_live_51RMYMV2Kb7kdg8PfdTGFQOdMyLTYixL451x4IOyip63ON56aHoqtpj4lMNF050Dh2ce2wCLSH2QCDwAdma3AoPMo00pymsLIqW";

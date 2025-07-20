@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:SandBox_Gifts_Backup/core/Ai/openai_serviceV2.dart';
+import 'package:SandBox_Gifts_Backup/core/Ai/openai_servicebuy_for_friend.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import '../providers/budget_provider.dart';

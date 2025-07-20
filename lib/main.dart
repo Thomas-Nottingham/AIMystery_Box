@@ -7,7 +7,6 @@ import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
 import 'package:SandBox_Gifts_Backup/pages/refund_policy.dart';
 import 'package:SandBox_Gifts_Backup/pages/success_page.dart';
 import 'package:SandBox_Gifts_Backup/pages/terms_and_conditions.dart';
-import 'package:SandBox_Gifts_Backup/secrets.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
 import 'package:SandBox_Gifts_Backup/providers/cart_provider.dart';
 import 'package:SandBox_Gifts_Backup/supabase_client.dart';
@@ -23,7 +22,8 @@ import 'package:SandBox_Gifts_Backup/core/Ai/openai_serviceV2.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeSupabase();
-  Stripe.publishableKey = stripePublishableKey;
+  Stripe.publishableKey =
+      "pk_live_51RMYMV2Kb7kdg8PfdTGFQOdMyLTYixL451x4IOyip63ON56aHoqtpj4lMNF050Dh2ce2wCLSH2QCDwAdma3AoPMo00pymsLIqW";
   await Stripe.instance.applySettings();
 
   usePathUrlStrategy();
