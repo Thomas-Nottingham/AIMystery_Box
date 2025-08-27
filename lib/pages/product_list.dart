@@ -46,7 +46,7 @@ final List<FaqItem> _faqItems = [
   const FaqItem(
     question: 'How much does it cost?',
     answer:
-        "The price is up to you! We allow for purchases within the range of £15 to £50, and you can select the amount that works for you.",
+        "The price is up to you! We allow for purchases within the range of £15 to £50, and you can select the amount that works for you. If you choose £15 you or your friend will recieve a gift equaling £10, or if you pick £50 you will recieve something worth £45.",
   ),
   const FaqItem(
     question: 'How long does it take to deliver?',
@@ -98,7 +98,8 @@ final List<ReviewItem> _reviewItems = [
 
 class ProductList extends StatefulWidget {
   final String? scrollTo;
-  const ProductList({super.key, this.scrollTo});
+  const ProductList({super.key, this.scrollTo, this.onScrollToAbout});
+  final VoidCallback? onScrollToAbout;
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -168,6 +169,24 @@ class _ProductListState extends State<ProductList> {
     }
   }
 
+  void _onUnlockMePressed2() async {
+    setState(() => isLoading = true);
+    try {
+      if (mounted) context.push('/startMysteryPage2');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to perform action: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
   void _scrollToSection({required GlobalKey key}) {
     if (key.currentContext != null) {
       Scrollable.ensureVisible(
@@ -192,10 +211,12 @@ class _ProductListState extends State<ProductList> {
                 HeroSection(
                   videoController: _videoController,
                   onUnlockMePressed: _onUnlockMePressed,
+                  onUnlockMePressed2: _onUnlockMePressed2,
+                  scrollToAbout: () => _scrollToSection(key: _aboutKey),
                 ),
                 const SizedBox(height: 10),
-                Explanation(),
                 AboutSection(key: _aboutKey),
+                Explanation(),
                 const SizedBox(height: 30),
                 //ReviewsSection(),
                 FaqSection(key: _faqKey),
@@ -224,11 +245,15 @@ class _ProductListState extends State<ProductList> {
 class HeroSection extends StatelessWidget {
   final VideoPlayerController videoController;
   final VoidCallback onUnlockMePressed;
+  final VoidCallback onUnlockMePressed2;
+  final VoidCallback scrollToAbout;
 
   const HeroSection({
     super.key,
     required this.videoController,
     required this.onUnlockMePressed,
+    required this.onUnlockMePressed2,
+    required this.scrollToAbout,
   });
 
   @override
@@ -243,43 +268,87 @@ class HeroSection extends StatelessWidget {
           child: Image.asset('assets/images/bg_image.png', fit: BoxFit.cover),
         ),
         Positioned(
-          top: screenSize.height * 0.02,
+          top: screenSize.height * 0.04,
+          child: const Text(
+            'The place to discover mystery gifts for \n oneself or another!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Color.fromARGB(255, 208, 207, 209),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: screenSize.height * 0.13,
           child: ElevatedButton(
             onPressed: () {
-              if (videoController.value.isPlaying) {
-                videoController.pause();
-              } else {
-                videoController.play();
-              }
+              scrollToAbout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Pallete.Purps,
-              foregroundColor: Pallete.primaryCol,
+              foregroundColor: const Color.fromARGB(255, 208, 207, 209),
               fixedSize: Size(300, screenSize.height * 0.05),
               shape: const StadiumBorder(),
             ),
             child: const Text(
-              'Who am I?',
+              'What is the Gift Vaults?',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
         ),
         Positioned(
-          bottom: screenSize.height * 0.35,
-          child: ElevatedButton(
-            onPressed: onUnlockMePressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Pallete.secondaryCol,
-              foregroundColor: Pallete.Purps,
-              fixedSize: Size(200, screenSize.height * 0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          bottom: screenSize.height * 0.18,
+          // Let the Row handle horizontal alignment by giving it the full width
+          left: 0,
+          right: 0,
+          child: Row(
+            // Center the buttons horizontally
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // First Button: "Gift for friend"
+              ElevatedButton(
+                onPressed: onUnlockMePressed2,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Pallete.secondaryCol,
+                  foregroundColor: const Color.fromARGB(255, 208, 207, 209),
+                  // Consider using padding instead of fixedSize for more flexibility
+                  fixedSize: Size(
+                    150,
+                    screenSize.height * 0.08,
+                  ), // Adjusted size a bit
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Gift for friend',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
-            ),
-            child: const Text(
-              'Unlock Me',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+              // The gap between the buttons
+              const SizedBox(width: 20),
+              // Second Button: "Gift for me"
+              ElevatedButton(
+                onPressed: onUnlockMePressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Pallete.secondaryCol,
+                  foregroundColor: Color.fromARGB(255, 208, 207, 209),
+                  fixedSize: Size(
+                    150,
+                    screenSize.height * 0.08,
+                  ), // Adjusted size a bit
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Gift for me',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -287,8 +356,8 @@ class HeroSection extends StatelessWidget {
   }
 }
 
-class AboutSection extends StatelessWidget {
-  const AboutSection({super.key});
+class Explanation extends StatelessWidget {
+  const Explanation({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -319,7 +388,7 @@ class AboutSection extends StatelessWidget {
           ),
           SizedBox(height: 20),
           Text(
-            """We are Tom and Joz, two friends (most of the time) and co-founders, trying to discover the next phase of online shopping while bringing surprise and delight back into everyday life. \n We’re not a big brand (Yet). Just a small team creating new and interesting things! \n If you’ve got a question, need help or have any ideas, we’d love it if you reached out!""",
+            """We are Tom and Joz, two friends  and co-founders, trying to discover the next phase of online shopping while bringing surprise and delight back into everyday life. \n We’re a small team creating new and interesting things! \n If you’ve got a question, need help or have any ideas, we’d love it if you reached out!""",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, color: Colors.white70),
           ),
@@ -329,8 +398,8 @@ class AboutSection extends StatelessWidget {
   }
 }
 
-class Explanation extends StatelessWidget {
-  const Explanation({super.key});
+class AboutSection extends StatelessWidget {
+  const AboutSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -353,6 +422,7 @@ class Explanation extends StatelessWidget {
         children: [
           Text(
             'A Thoughtful and Personal Gift, With a Twist of Surprise!',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -361,7 +431,7 @@ class Explanation extends StatelessWidget {
           ),
           SizedBox(height: 20),
           Text(
-            """At The Gift Vaults, we know that a gift is more than just a product. \n It’s the build-up. The curiosity. The thrill of not knowing, and the moment of surprise when it arrives. \n So why wait for someone else to gift you something when you can gift yourself? \n Here, the magic starts with a short chat. \n Tell us a little about who you are, your interests, your vibe, and we’ll pick out a surprise gift we think you’ll love. \n Every gift is matched to you and always equal in value to the price you choose. \n If you're into the idea, all you have to do is say yes. We'll take care of the rest while you sit back and enjoy the anticipation. \n We might even drop you a hint or two before it shows up…""",
+            """At The Gift Vaults, we know that a gift is more than just a product. \n It’s the build-up. The curiosity. The thrill of not knowing, and the moment of surprise when it arrives. \n So why wait for someone else to gift you something when you can gift yourself? \n Here, the magic starts with a short chat. \n Tell us a little about who you are, your interests, your vibe, and we’ll pick out a surprise gift we think you’ll love. \n Every gift is matched to you. \n If you're into the idea, all you have to do is say yes. We'll take care of the rest while you sit back and enjoy the anticipation. \n We might even drop you a hint or two before it shows up…""",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, color: Colors.white70),
           ),

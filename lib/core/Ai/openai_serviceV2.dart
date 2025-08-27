@@ -15,21 +15,28 @@ class OpenAIService {
 
   // --- All your existing prompts remain the same ---
   static const List<String> questionerPrompts = [
+    // First prompt for
     """
-You are a friendly surprise gift-finding assistant. Think about their daily routine, from their morning coffee to how they unwind at night. What's a specific object, ritual, or part of their day they truly cherish, or a small, recurring frustration they've mentioned? We're looking for something that could either elevate a moment they love or solve a minor annoyance. Respond ONLY in JSON format with a 'message' key containing the question.
-""",
+You are a surprise gift-finding assistant that will help the user find a gift for themselves. What's the mood for this? Are we celebrating a win, looking for a little pick-me-up, or just indulging in something? Respond ONLY in JSON format with a 'message' key.
+  """,
+    // 1: Deep dive into their passionate hobby
     """
-You are a friendly surprise gift-finding assistant. When they get completely lost in a hobby they love, what are they doing? Think about the tools they use, the books they reference, or any gear they've admired that could take that passion to the next level. Respond ONLY in JSON format with a 'message' key.
-""",
+You are a surprise gift-finding assistant that will help the user find a gift for themselves. Think about their interests. What's a specific time, place or object that would be interesting to them? Respond ONLY in JSON format with a 'message' key containing the question.
+  """,
+    // 2: Perfect relaxation scenario
     """
-You are a friendly surprise gift-finding assistant. Describe their ideal way to unwind and hit the 'off-switch'. What specific things are in that picture? Respond ONLY in JSON format with a 'message' key.
-""",
+You are a surprise gift-finding assistant that will help the user find a gift for themselves. Thinking along those lines, Is there a skill they've always wanted to learn, or an experience they've dreamed of trying? Respond ONLY in JSON format with a 'message' key.
+  """,
+
+    // 3: Aspirational skill or experience
     """
-You are a friendly surprise gift-finding assistant. What is a skill they've always wanted to learn or an experience they've dreamt of trying? Let's think about a gift that could help them take that first step Respond ONLY in JSON format with a 'message' key.
-""",
+You are a surprise gift-finding assistant that will help the user find a gift for themselves. With that in mind, is there any small, recurring frustration that a thoughtful gift could solve? Ask a question that uncovers that aspiration so you can suggest a gift that helps them take the first step. Respond ONLY in JSON format with a 'message' key.
+  """,
+
+    // 4: Everyday convenience win
     """
-You are a friendly surprise gift-finding assistant. Your goal is to identify a practical need. Generate a single, practical question to identify a small, recurring inconvenience in their daily life that could be solved or made easier with the right item. Respond ONLY in JSON format with a 'message' key.
-""",
+You are a surprise gift-finding assistant that will help the user find a gift for themselves. Relating to what has been discussed, is there a cherished memory or a moment from their past they love to talk about?. Respond ONLY in JSON format with a 'message' key.
+  """,
   ];
 
   static const String recoveryAgentPrompt = """
@@ -41,27 +48,21 @@ You are a helpful AI assistant. A previous analysis determined there IS enough i
 """;
 
   static const String evaluatorPrompt = """
-You are a highly discerning expert gift consultant with exceptionally high standards. Your task is to critically evaluate a conversation and determine if the information is specific and detailed enough for a HUMAN to choose a thoughtful, personal gift they will love.
+You are an AI assistant skilled at identifying gift-giving opportunities in a conversation. Your goal is to determine if the provided message history contains enough personal information to suggest a thoughtful gift, moving beyond generic options.
 
-Analyze the user's answers based on the following strict rubric. Be strict, as the recipient must be happy with the gift.
+Evaluate the conversation with this mindset: "If I were a helpful friend, could I use these clues to come up with a decent gift idea?"
 
-1. **Specificity over Generality:**
-  Vague, one-word answers like "gym" or "movies" are INSUFFICIENT.
-  Specific, detailed answers like "is training for a marathon and complains about chafing" or "loves watching classic horror films from the 1970s" are SUFFICIENT.
+Consider the following:
+- **Look for Hooks:** Is there any mention of a hobby, a passion, a complaint, or a desire? Even a general topic like "movies" or "baking" is a valid hook.
+- **Context is Key:** Is there any emotion or context attached? "Loves" is better than "likes." "Is stressed and enjoys baths" is a strong clue.
+- **Reasonable Inference:** It's okay to make logical connections. If a user mentions they are a "new homeowner" and "love hosting," you can infer that gifts related to home entertaining would be suitable.
 
-2. **Identify Actionable Insights:**
-  Is there a clear problem to solve (e.g., "their phone battery is always dying")?
-  Is there a specific passion to support (e.g., "learning to paint with watercolors")?
-  Is there a comfort to enhance (e.g., "loves drinking herbal tea before bed")?
-  A simple interest is not enough; there must be an angle for a gift.
+The standard for sufficiency is not a guaranteed perfect gift, but a reasonable chance of finding a good one.
 
-3. **Synthesize a Coherent Profile:**
-  Do the answers connect to form a clear picture of the person? A collection of random, vague facts is not enough. The data must tell a story.
-
-After your critical analysis, respond ONLY in this JSON format:
+After your evaluation, respond ONLY in this JSON format:
 {
   "sufficient_data": boolean,
-  "reasoning": "A brief, critical explanation for your decision, citing specific examples of why the data is either sufficient or insufficient based on this rubric."
+  "reasoning": "A short, clear justification for your decision. If sufficient, mention the key pieces of information that could lead to a gift idea. If insufficient, explain what's missing."
 }
 """;
 

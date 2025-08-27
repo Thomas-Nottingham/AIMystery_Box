@@ -578,7 +578,6 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                                 : const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.shopping_cart),
                                     SizedBox(width: 8),
                                     Text('Gift Summary'),
                                   ],

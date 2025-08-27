@@ -18,6 +18,7 @@ class BaseLayout extends StatelessWidget {
     required this.child,
     this.onScrollToFAQ,
     this.onScrollToAbout,
+
     this.appBarr,
     this.appBarColor,
     this.appTextColor,
@@ -61,7 +62,9 @@ class BaseLayout extends StatelessWidget {
     // This uses the old route detection, which you said works for the pop-up
     final currentRoute = ModalRoute.of(context)?.settings.name;
 
-    if (currentRoute == '/startMysteryPage' || currentRoute == '/cart_page') {
+    if (currentRoute == '/startMysteryPage' ||
+        currentRoute == '/startMysteryPage2' ||
+        currentRoute == '/cart_page') {
       final shouldExit = await _showExitConfirmation(context);
       if (!shouldExit) {
         return; // User clicked "No," so we stop here.

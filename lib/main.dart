@@ -1,6 +1,8 @@
 import 'package:SandBox_Gifts_Backup/pages/Contact_us.dart';
 import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage.dart';
+import 'package:SandBox_Gifts_Backup/pages/StartMysteryPage2.dart';
 import 'package:SandBox_Gifts_Backup/pages/cart_page.dart';
+import 'package:SandBox_Gifts_Backup/pages/cart_page2.dart';
 import 'package:SandBox_Gifts_Backup/pages/cookie_policy.dart';
 import 'package:SandBox_Gifts_Backup/pages/privacy_policy_page.dart';
 import 'package:SandBox_Gifts_Backup/pages/product_list.dart';
@@ -15,29 +17,35 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/budget_provider.dart';
+import 'package:SandBox_Gifts_Backup/providers/budget_provider2.dart';
+
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:SandBox_Gifts_Backup/core/Ai/openai_serviceV2.dart';
+import 'package:SandBox_Gifts_Backup/core/Ai/openai_servicebuy_for_friend.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeSupabase();
   Stripe.publishableKey =
-      "pk_live_51RMYMV2Kb7kdg8PfdTGFQOdMyLTYixL451x4IOyip63ON56aHoqtpj4lMNF050Dh2ce2wCLSH2QCDwAdma3AoPMo00pymsLIqW";
+      "pk_test_51RMYMeRwiRrw4YRsMBMKPHIzawX9YTBgwVrQUAtTwTAGikd0qarUjbX0K8lyWQv0dv5uBz9PBFmDwYRFkSpRz2WC00Z0otGanR";
   await Stripe.instance.applySettings();
 
   usePathUrlStrategy();
 
   // --- CREATE A SINGLE SHARED INSTANCE OF THE SERVICE ---
   final openAIService = OpenAIService();
+  final openAIService2 = OpenAIService2();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => BudgetProvider()),
+        ChangeNotifierProvider(create: (_) => BudgetProvider2()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         // --- PROVIDE THAT SINGLE INSTANCE TO THE ENTIRE APP ---
         Provider.value(value: openAIService),
+        Provider.value(value: openAIService2),
       ],
       child: const MyApp(),
     ),
@@ -59,8 +67,13 @@ final _router = GoRouter(
       path: '/startMysteryPage',
       builder: (_, __) => const StartMysteryPage(),
     ),
+    GoRoute(
+      path: '/startMysteryPage2',
+      builder: (_, __) => const StartMysteryPage2(),
+    ),
     GoRoute(path: '/contact', builder: (_, __) => const ContactUs()),
     GoRoute(path: '/cart_page', builder: (_, __) => const CartPage()),
+    GoRoute(path: '/cart_page2', builder: (_, __) => const CartPage2()),
     GoRoute(
       path: '/privacy_policy',
       builder: (_, __) => const PrivacyPolicyPage(),

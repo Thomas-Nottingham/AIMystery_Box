@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'dart:async'; // Import for TimeoutException
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/budget_provider.dart'; // Ensure this path is correct
+import 'package:SandBox_Gifts_Backup/providers/budget_provider2.dart';
 
-class OpenAIService {
+class OpenAIService2 {
   final List<Map<String, String>> messages = [];
   int questionCount = 0;
   bool addToCartAvailable = false;
@@ -13,55 +14,45 @@ class OpenAIService {
   static const int maxInitialQuestions = 5;
   static const int maxSecondaryMessages = 4;
 
-  // --- All your existing prompts remain the same ---
-  static const List<String> questionerPrompts = [
-    """
-You are a friendly surprise gift-finding assistant. Think about their daily routine, from their morning coffee to how they unwind at night. What's a specific object, ritual, or part of their day they truly cherish, or a small, recurring frustration they've mentioned? We're looking for something that could either elevate a moment they love or solve a minor annoyance. Respond ONLY in JSON format with a 'message' key containing the question.
-""",
-    """
-You are a friendly surprise gift-finding assistant. When they get completely lost in a hobby they love, what are they doing? Think about the tools they use, the books they reference, or any gear they've admired that could take that passion to the next level. Respond ONLY in JSON format with a 'message' key.
-""",
-    """
-You are a friendly surprise gift-finding assistant. Describe their ideal way to unwind and hit the 'off-switch'. What specific things are in that picture? Respond ONLY in JSON format with a 'message' key.
-""",
-    """
-You are a friendly surprise gift-finding assistant. What is a skill they've always wanted to learn or an experience they've dreamt of trying? Let's think about a gift that could help them take that first step Respond ONLY in JSON format with a 'message' key.
-""",
-    """
-You are a friendly surprise gift-finding assistant. Your goal is to identify a practical need. Generate a single, practical question to identify a small, recurring inconvenience in their daily life that could be solved or made easier with the right item. Respond ONLY in JSON format with a 'message' key.
-""",
-  ];
+  static const String initialConversationalPrompt = """
+You are a gift-finding chatbot. Your ONLY task is to ask the very first question. Ask the user for their friend's hobbies or interests. Do not greet them. Do not add any other text. Just ask the question. Respond ONLY in JSON format with a 'message' key containing your question.
+""";
+
+  static const String followUpConversationalPrompt = """
+You are a gift-finding chatbot. Your ONLY task right now is to ask an insightful follow-up question based on the user's last answer.
+
+Your goal is to uncover more information that would be useful for gift finding. 
+
+Follow these rules:
+1.  **Ask open-ended questions.** Avoid simple yes/no questions. 
+2.  **Try and ensure a human can look at the conversation and be able to find a gift based on what they see.** 3.  **Handle unhelpful answers.** If the user says "no" or "I don't know", do not just move on. Rephrase the question or pivot slightly.
+4.  **Do not make statements. Just ask one question.**
+
+Respond ONLY in JSON format with a 'message' key containing your single, insightful question.
+""";
 
   static const String recoveryAgentPrompt = """
-You are a helpful AI assistant. A previous analysis determined there wasn't enough information to find a gift. Your new goal is to recover the conversation. Be friendly and a bit more direct. Ask the user for specific hobbies, interests, or types of things the recipient might enjoy. It's a surprise, so be subtle. Respond ONLY in JSON format with a 'message' key.
+You are a helpful AI assistant. A previous analysis determined there wasn't enough information to find a gift. Get the user to elbaroate more on what their friend likes. Respond ONLY in JSON format with a 'message' key.
 """;
 
   static const String continuationAgentPrompt = """
-You are a helpful AI assistant. A previous analysis determined there IS enough information for a great gift suggestion. Your new goal is to be pleasantly conversational. Let the user know you have enough information and can click the gift summary button but you would be happy to take any other details they want to share. Respond ONLY in JSON format with a 'message' key.
-""";
+You are a helpful AI assistant. A previous analysis determined there IS enough information for a great gift suggestion. Let the user know that you have generated 3 gift ideas and they can check those out by clicking the gift summary button but you would be happy to take any other details they want to share. Respond ONLY in JSON format with a 'message' key""";
 
+  // --- CLEANED UP EVALUATOR PROMPT ---
   static const String evaluatorPrompt = """
-You are a highly discerning expert gift consultant with exceptionally high standards. Your task is to critically evaluate a conversation and determine if the information is specific and detailed enough for a HUMAN to choose a thoughtful, personal gift they will love.
+You are an AI assistant skilled at identifying gift-giving opportunities. Your goal is to find a good balance: you need enough detail to avoid generic gifts, but you don't need a full biography.
 
-Analyze the user's answers based on the following strict rubric. Be strict, as the recipient must be happy with the gift.
+Evaluate the conversation with this mindset: "Has the user provided at least one specific detail, emotion, or context that makes the general topic more personal?"
 
-1. **Specificity over Generality:**
-  Vague, one-word answers like "gym" or "movies" are INSUFFICIENT.
-  Specific, detailed answers like "is training for a marathon and complains about chafing" or "loves watching classic horror films from the 1970s" are SUFFICIENT.
+Consider the following:
+- **Look for an 'Extra Layer':** A general topic like "tennis" or a single-word answer is **not sufficient on its own**. It becomes sufficient only when an 'extra layer' of detail is added. This could be a specific behavior ("plays every weekend"), an emotion ("is obsessed with..."), or a simple preference ("loves watching the big tournaments"). You need the user to elaborate, even just a little.
+- **Context is Key:** Look for any clue that adds personality. "Loves" is better than "likes." "Is stressed and enjoys baths" is a strong signal.
+- **Be Wary of Vague Answers:** A conversation with only single-word topics ("sports", "movies") and no additional detail is likely insufficient.
 
-2. **Identify Actionable Insights:**
-  Is there a clear problem to solve (e.g., "their phone battery is always dying")?
-  Is there a specific passion to support (e.g., "learning to paint with watercolors")?
-  Is there a comfort to enhance (e.g., "loves drinking herbal tea before bed")?
-  A simple interest is not enough; there must be an angle for a gift.
-
-3. **Synthesize a Coherent Profile:**
-  Do the answers connect to form a clear picture of the person? A collection of random, vague facts is not enough. The data must tell a story.
-
-After your critical analysis, respond ONLY in this JSON format:
+After your evaluation, respond ONLY in this JSON format:
 {
   "sufficient_data": boolean,
-  "reasoning": "A brief, critical explanation for your decision, citing specific examples of why the data is either sufficient or insufficient based on this rubric."
+  "reasoning": "A short, clear justification for your decision. If sufficient, mention the key detail that tipped the scale. If insufficient, explain what kind of extra detail is needed (e.g., 'The user mentioned 'sports' but didn't specify which sport or how their friend enjoys it.')."
 }
 """;
 
@@ -69,14 +60,32 @@ After your critical analysis, respond ONLY in this JSON format:
 You are a thoughtful gift profiler. Your task is to synthesize the entire provided conversation history to understand the essence of the person for whom the gift is intended.
 Based on this, create a short, intriguing summary (25-40 words) of the *person* and the *theme* of the gift you have in mind.
 DO NOT mention or hint at any specific products. Focus on the person's character, passions, or needs that the conversation revealed.
-The tone should be warm, personal, and slightly mysterious.
+The tone should be warm, personal, and slightly mysterious. dont include anything about the users age or budget.
 Respond ONLY in this JSON format:
 {
   "summary": "Your generated summary here."
 }
 """;
 
-  // --- All your other methods like giftFinderBot, evaluateGiftData etc. remain here unchanged ---
+  static const String giftChoicesPrompt = """
+You are a practical gift suggestion AI. Based on the provided conversation history, your task is to generate exactly three distinct, tangible, and simple gift ideas. These should be concrete items, not experiences or concepts.
+
+Follow these rules:
+1.  Analyze the conversation to understand the recipient's interests and the user's budget.
+2.  Suggest three different physical products that align with those interests.
+3.  Keep the descriptions concise (5-10 words each).
+4.  Do not number the list.
+
+Respond ONLY in this JSON format:
+{
+  "choices": [
+    "Your first gift idea here",
+    "Your second gift idea here",
+    "Your third gift idea here"
+  ]
+}
+""";
+
   void clearMessages() {
     messages.clear();
     questionCount = 0;
@@ -111,8 +120,7 @@ Respond ONLY in this JSON format:
             )['choices'][0]['message']['content'];
         final jsonContent = jsonDecode(content);
         messages.add({'role': 'assistant', 'content': content});
-        // This saves the raw history during the chat
-        Provider.of<BudgetProvider>(
+        Provider.of<BudgetProvider2>(
           context,
           listen: false,
         ).setConversationHistory(jsonEncode(messages));
@@ -150,8 +158,7 @@ Respond ONLY in this JSON format:
             )['choices'][0]['message']['content'];
         final jsonContent = jsonDecode(content);
         messages.add({'role': 'system', 'content': content});
-        // This also saves the raw history during the chat
-        Provider.of<BudgetProvider>(
+        Provider.of<BudgetProvider2>(
           context,
           listen: false,
         ).setConversationHistory(jsonEncode(messages));
@@ -180,19 +187,19 @@ Respond ONLY in this JSON format:
       messages.add({
         'role': 'system',
         'content':
-            """You are speaking to $name with a budget of $budget. Act as an intuitive gift finder. Guide the user through an engaging experience by asking a few thoughtful questions about their personality, interests, and preferences.
+            """You are speaking to $name with a budget of $budget. they're buying for someone else. Act as an intuitive gift finder. Guide the user through an engaging experience by asking thoughtful questions
 Your goal is to uncover something about the user that leads to a unique and meaningful surprise gift.
-Ask your questions one at a time, building towards a reveal, Keep the tone warm, curious, and a little playful.
-The experience should feel like a mix between a personality quiz and a treasure hunt. Make the user feel like they are going to receive a surprise that is 
+Ask your questions one at a time, Keep the tone warm, curious.
+The experience should feel like a mix between a personality quiz and a treasure hunt. Make the user feel like they are going to receive a surprise.
 
 Follow these rules:
 1. Always speak directly with the user.
-3. Never tell the user what the product is or tell them something that would let them easily understand. 
-4. Create a conversational style flow, considering their message as if they were talking to another person.
-5. Keep responses under 30 words
-6. Never consider products that could be deemeed as risky.
-7. Never consider prooducts related to food/consumables, medical items, or clothing/shoes.
-8. Remember the budget and do not find realistic products within that budget.""",
+2. Never tell the user what the product is or tell them something that would let them easily understand.
+3. Create a conversational style flow, considering their message as if they were talking to another person.
+4. Keep responses under 30 words.
+5. Never consider products that could be deemed as risky.
+6. Never consider products related to food/consumables, medical items.
+7. Remember the budget and do not find realistic products within that budget.""",
       });
     }
 
@@ -200,7 +207,11 @@ Follow these rules:
     if (messages.length > 20) messages.removeRange(3, messages.length - 2);
 
     if (questionCount < maxInitialQuestions) {
-      final systemPrompt = questionerPrompts[questionCount];
+      final systemPrompt =
+          questionCount == 0
+              ? initialConversationalPrompt
+              : followUpConversationalPrompt;
+
       final botResponse = await getGiftBotQuestion(systemPrompt, context);
       if (botResponse != null && botResponse.containsKey('message')) {
         questionCount++;
@@ -282,7 +293,47 @@ Follow these rules:
     return "A special surprise tailored just for them.";
   }
 
-  // --- STEP 1: LOCAL CLEANING METHOD ---
+  // --- CORRECTED getGiftChoices METHOD ---
+  Future<List<String>> getGiftChoices() async {
+    // Uses the live 'messages' list, not context/provider
+    final tempMessages = List<Map<String, String>>.from(messages);
+    tempMessages.insert(0, {'role': 'system', 'content': giftChoicesPrompt});
+
+    try {
+      final res = await http
+          .post(
+            Uri.parse('/api/openai'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              "model": "gpt-4o",
+              "response_format": {"type": "json_object"},
+              "messages": tempMessages,
+              "max_tokens": 200,
+              "temperature": 0.6,
+            }),
+          )
+          .timeout(const Duration(seconds: 20)); // Added timeout for safety
+
+      if (res.statusCode == 200) {
+        final content =
+            jsonDecode(
+              utf8.decode(res.bodyBytes),
+            )['choices'][0]['message']['content'];
+        final jsonContent = jsonDecode(content);
+        List<String> choices = List<String>.from(jsonContent['choices']);
+        return choices;
+      }
+    } catch (e) {
+      print('Error in getGiftChoices: $e');
+    }
+    // Return a fallback list only if the API call fails or times out
+    return [
+      "A thoughtful book",
+      "A high-quality water bottle",
+      "A unique coffee mug",
+    ];
+  }
+
   Future<String> createCleanTranscript(String rawJsonHistory) async {
     try {
       final List<dynamic> messages = jsonDecode(rawJsonHistory);
@@ -310,7 +361,6 @@ Follow these rules:
     }
   }
 
-  // --- NEW PROMPT FOR THE SUMMARIZER ---
   static const String _transcriptSummarizerPrompt = """
 You will be given a chat transcript. The user's messages are very repetitive as they repeat previous context in every message.
 Your task is to rewrite the conversation to be more natural and concise by removing the duplicated information from the user's side.
@@ -318,7 +368,6 @@ The assistant's messages should remain unchanged.
 Maintain the exact back-and-forth 'User:' and 'Assistant:' format.
 """;
 
-  // --- STEP 2: NEW AI SUMMARIZATION METHOD ---
   Future<String> summarizeCleanTranscript(String cleanTranscript) async {
     final messagesForSummarizing = [
       {'role': 'system', 'content': _transcriptSummarizerPrompt},
@@ -330,10 +379,9 @@ Maintain the exact back-and-forth 'User:' and 'Assistant:' format.
         Uri.parse('/api/openai'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "model":
-              "gpt-4o", // You could use a faster model like gpt-3.5-turbo here too
+          "model": "gpt-4o",
           "messages": messagesForSummarizing,
-          "max_tokens": 400, // Allow enough space for the full conversation
+          "max_tokens": 400,
           "temperature": 0.1,
         }),
       );
@@ -343,13 +391,11 @@ Maintain the exact back-and-forth 'User:' and 'Assistant:' format.
           utf8.decode(res.bodyBytes),
         )['choices'][0]['message']['content'];
       } else {
-        // If the AI call fails, return the clean but unsummarized transcript
         print('AI summarization failed: ${res.body}');
         return cleanTranscript;
       }
     } catch (e) {
       print('Error summarizing clean transcript: $e');
-      // If an error occurs, return the clean but unsummarized transcript
       return cleanTranscript;
     }
   }

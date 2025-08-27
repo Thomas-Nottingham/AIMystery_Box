@@ -5,21 +5,21 @@ import 'package:provider/provider.dart';
 import 'package:SandBox_Gifts_Backup/core/Ai/openai_servicebuy_for_friend.dart';
 import 'package:SandBox_Gifts_Backup/presentation/BaseLayout.dart';
 import 'package:SandBox_Gifts_Backup/widgets/pallete.dart';
-import '../providers/budget_provider.dart';
+import 'package:SandBox_Gifts_Backup/providers/budget_provider2.dart';
 
-class StartMysteryPage extends StatefulWidget {
-  const StartMysteryPage({super.key});
+class StartMysteryPage2 extends StatefulWidget {
+  const StartMysteryPage2({super.key});
 
   @override
-  State<StartMysteryPage> createState() => _StartMysteryPageState();
+  State<StartMysteryPage2> createState() => _StartMysteryPageState();
 }
 
-class _StartMysteryPageState extends State<StartMysteryPage>
+class _StartMysteryPageState extends State<StartMysteryPage2>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _textController = TextEditingController();
   final List<Map<String, String>> _messages = [];
   final List<String> _questions = [
-    "What is your name?",
+    "What is their name?",
     "How much would you like to spend? Within the boundaries of £15 and £50",
   ];
   final List<String> _responses = [];
@@ -50,7 +50,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    final openAIService = Provider.of<OpenAIService>(context, listen: false);
+    final openAIService = Provider.of<OpenAIService2>(context, listen: false);
     openAIService.clearMessages();
 
     _animationController = AnimationController(
@@ -65,6 +65,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(milliseconds: 1400));
+      if (!mounted) return;
       setState(() {
         _messages.add({
           'sender': 'ai',
@@ -78,7 +79,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         _messages.add({
           'sender': 'ai',
           'text':
-              "We have thousands of surprises waiting to be discovered, but first let's run a few of the basic questions.",
+              "First let's run a few of the basic questions about who you are buying for and determine what they might be interested in!",
         });
       });
       await Future.delayed(const Duration(milliseconds: 1000));
@@ -90,7 +91,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         });
         _isProcessing = false;
       });
-      _requestInputFocus();
+      _handlePlatformSpecificFocus();
     });
   }
 
@@ -108,8 +109,9 @@ class _StartMysteryPageState extends State<StartMysteryPage>
   @override
   void didChangeMetrics() {
     super.didChangeMetrics();
-    // This triggers a rebuild when the keyboard appears/disappears
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _onFocusChange() {
@@ -121,10 +123,15 @@ class _StartMysteryPageState extends State<StartMysteryPage>
     }
   }
 
-  void _requestInputFocus() {
+  void _handlePlatformSpecificFocus() {
+    if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (!mounted) return;
+      final screenWidth = MediaQuery.of(context).size.width;
+      if (screenWidth >= 800) {
         _focusNode.requestFocus();
+      } else {
+        _focusNode.unfocus();
       }
     });
   }
@@ -160,7 +167,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
           });
           _scrollToBottom();
           _responses.removeLast();
-          _requestInputFocus();
+          _handlePlatformSpecificFocus();
           return;
         }
       }
@@ -177,7 +184,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
           _isProcessing = false;
         });
         _scrollToBottom();
-        _requestInputFocus();
+        _handlePlatformSpecificFocus();
       } else if (!_questionsCompleted) {
         if (!mounted) return;
         setState(() {
@@ -197,13 +204,13 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         setState(() {
           _isProcessing = false;
         });
-        _requestInputFocus();
+        _handlePlatformSpecificFocus();
       }
     }
   }
 
   Future<void> _startAIChat([String? userMessage]) async {
-    final openAIService = Provider.of<OpenAIService>(context, listen: false);
+    final openAIService = Provider.of<OpenAIService2>(context, listen: false);
     try {
       final input =
           userMessage != null
@@ -223,13 +230,13 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         _isProcessing = false;
       });
       _scrollToBottom();
-      _requestInputFocus();
+      _handlePlatformSpecificFocus();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isProcessing = false;
         });
-        _requestInputFocus();
+        _handlePlatformSpecificFocus();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to continue AI chat: $e'),
@@ -241,7 +248,7 @@ class _StartMysteryPageState extends State<StartMysteryPage>
   }
 
   Future<void> _FirstAiChat() async {
-    final openAIService = Provider.of<OpenAIService>(context, listen: false);
+    final openAIService = Provider.of<OpenAIService2>(context, listen: false);
     try {
       final input = _responses.join(", ");
       if (!mounted) return;
@@ -260,13 +267,13 @@ class _StartMysteryPageState extends State<StartMysteryPage>
         _isProcessing = false;
       });
       _scrollToBottom();
-      _requestInputFocus();
+      _handlePlatformSpecificFocus();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isProcessing = false;
         });
-        _requestInputFocus();
+        _handlePlatformSpecificFocus();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to get the first AI response: $e'),
@@ -412,11 +419,9 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                               _isProcessing ? Colors.grey : Pallete.blackColor,
                           fontSize: 16,
                         ),
-                        // --- THE FINAL FIX FOR SAFARI ---
                         minLines: 1,
                         maxLines: 1,
                         keyboardType: TextInputType.text,
-                        // --- END OF FIX ---
                         textCapitalization: TextCapitalization.sentences,
                         textInputAction: TextInputAction.send,
                         decoration: InputDecoration(
@@ -486,12 +491,12 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                                   });
                                   try {
                                     final budgetProvider =
-                                        Provider.of<BudgetProvider>(
+                                        Provider.of<BudgetProvider2>(
                                           context,
                                           listen: false,
                                         );
                                     final openAIService =
-                                        Provider.of<OpenAIService>(
+                                        Provider.of<OpenAIService2>(
                                           context,
                                           listen: false,
                                         );
@@ -512,6 +517,15 @@ class _StartMysteryPageState extends State<StartMysteryPage>
 
                                     final summary = await openAIService
                                         .summarizeGiftPersona(context);
+                                    budgetProvider.setGiftSummary(summary);
+
+                                    // ⭐ 1. GENERATE THE GIFT CHOICES
+                                    final choices =
+                                        await openAIService.getGiftChoices();
+
+                                    // ⭐ 2. SAVE THE CHOICES TO THE PROVIDER
+                                    budgetProvider.setGiftChoices(choices);
+
                                     onTap();
                                     budgetProvider.setBudget(budgetResponse);
                                     budgetProvider.setUserAge(ageResponse);
@@ -524,10 +538,9 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                                     budgetProvider.setProductDetails(
                                       'Surprise Gift',
                                     );
-                                    budgetProvider.setGiftSummary(summary);
 
                                     if (mounted) {
-                                      context.push('/cart_page');
+                                      context.push('/cart_page2');
                                     }
                                   } catch (e) {
                                     print("Error during button press: $e");
@@ -578,7 +591,6 @@ class _StartMysteryPageState extends State<StartMysteryPage>
                                 : const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.shopping_cart),
                                     SizedBox(width: 8),
                                     Text('Gift Summary'),
                                   ],
